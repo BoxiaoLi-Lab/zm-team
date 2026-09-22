@@ -2,29 +2,48 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "uploads"
-public_folder: "/uploads"
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
 
 collections:
-  - name: "data"
-    label: "科研合作数据"
-    files:
-      - file: "data/collaborations.json"
-        label: "科研合作列表"
-        name: "collaborations"
-        fields:
-          - label: "合作记录列表"
-            name: "items"
-            widget: "list"
-            summary: "{{fields.topic}} - {{fields.members}}"
-            fields:
-              - label: "合作者成员"
-                name: "members"
-                widget: "list"
-                default: ["李柏霄"]
-              - { label: "合作课题", name: "topic", widget: "string" }
-              - { label: "执行学生", name: "student", widget: "string", required: false }
-              - { label: "开始时间", name: "startDate", widget: "string", default: "2026-01-01" }
-              - { label: "结束时间", name: "endDate", widget: "string", default: "2026-12-31" }
-              - { label: "合作贡献与分工", name: "labor", widget: "text", required: false }
-              - { label: "合作成果", name: "outputs", widget: "text", required: false }
+  - name: "collaborations"
+    label: "科研合作项目"
+    folder: "content/collaborations"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "课题名称", name: "title", widget: "string"}
+      - label: "合作教师成员"
+        name: "members"
+        widget: "select"
+        multiple: true
+        options:
+          - "陈玉伟"
+          - "段泳欣"
+          - "蒋敏"
+          - "李柏霄"
+          - "李明杰"
+          - "刘云霄"
+          - "孙依晗"
+          - "王纲"
+          - "王杰"
+          - "王淑雪"
+          - "乌皓"
+          - "杨洪生"
+          - "袁媛"
+          - "张建明"
+          - "张晓芳"
+          - "张泽军"
+          - "周立娟"
+          - "周丽娟"
+          - "宗鲁"
+      - label: "合作状态"
+        name: "status"
+        widget: "select"
+        options: ["在研中", "已结题"]
+        default: "在研中"
+      - {label: "对接执行学生", name: "student", widget: "string", required: false}
+      - {label: "开始日期", name: "startDate", widget: "date", format: "YYYY-MM-DD", required: false}
+      - {label: "结束日期", name: "endDate", widget: "date", format: "YYYY-MM-DD", required: false}
+      - {label: "合作分工与贡献", name: "contribution", widget: "text", required: false}
+      - {label: "合作预期/实际成果", name: "result", widget: "text", required: false}
