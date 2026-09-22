@@ -1,5 +1,6 @@
 backend:
   name: git-gateway
+  repo: Boxiaoli-Lab/zm-team
   branch: main
 
 media_folder: "images/uploads"
@@ -43,7 +44,7 @@ collections:
         options: ["在研中", "已结题"]
         default: "在研中"
       - {label: "对接执行学生", name: "student", widget: "string", required: false}
-      - {label: "开始日期", name: "startDate", widget: "date", format: "YYYY-MM-DD", required: false}
-      - {label: "结束日期", name: "endDate", widget: "date", format: "YYYY-MM-DD", required: false}
+      - {label: "开始日期", name: "startDate", widget: "string", required: false, placeholder: "例如: 2026-03-01"}
+      - {label: "结束日期", name: "endDate", widget: "string", required: false, placeholder: "例如: 2026-09-01"}
       - {label: "合作分工与贡献", name: "contribution", widget: "text", required: false}
       - {label: "合作预期/实际成果", name: "result", widget: "text", required: false}
