@@ -9,13 +9,8 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    .teacher-card {
-      transition: all 0.25s ease-in-out;
-    }
-    .teacher-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    }
+    .card-hover { transition: all 0.2s ease-in-out; }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08); }
   </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between font-sans">
@@ -32,12 +27,23 @@
           <p class="text-xs text-indigo-300">Research Collaboration Network & Faculty Directory</p>
         </div>
       </div>
+      
+      <!-- 视图切换与后台入口 -->
       <div class="flex items-center space-x-3">
-        <button onclick="fetchData()" class="px-3 py-1.5 bg-indigo-800 hover:bg-indigo-700 text-indigo-200 text-xs font-medium rounded-md transition flex items-center gap-1.5">
-          <i class="fa-solid fa-arrows-rotate"></i> 刷新数据
+        <div class="bg-indigo-950 p-1 rounded-lg flex space-x-1 border border-indigo-800">
+          <button onclick="switchView('teachers')" id="btnViewTeachers" class="px-3 py-1.5 rounded-md text-xs font-semibold transition bg-indigo-600 text-white shadow-sm">
+            <i class="fa-solid fa-users mr-1"></i> 教师信息总览
+          </button>
+          <button onclick="switchView('projects')" id="btnViewProjects" class="px-3 py-1.5 rounded-md text-xs font-semibold transition text-indigo-300 hover:text-white">
+            <i class="fa-solid fa-list-check mr-1"></i> 合作研究总览
+          </button>
+        </div>
+
+        <button onclick="fetchData()" class="px-3 py-1.5 bg-indigo-800 hover:bg-indigo-700 text-indigo-200 text-xs font-medium rounded-md transition" title="刷新数据">
+          <i class="fa-solid fa-arrows-rotate"></i>
         </button>
         <a href="./admin/" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-md shadow-sm transition flex items-center gap-1.5">
-          <i class="fa-solid fa-sliders"></i> 管理后台 (Decap CMS)
+          <i class="fa-solid fa-sliders"></i> 管理后台
         </a>
       </div>
     </div>
@@ -46,26 +52,44 @@
   <!-- Main Content Area -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
     
-    <!-- Top Search & Stats Bar -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="relative w-full md:w-96">
-        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="searchInput" oninput="filterTeachers()" placeholder="搜索教师姓名、拼音首字母..." 
-               class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+    <!-- 视图一：教师信息总览 -->
+    <div id="viewTeachers" class="space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="relative w-full md:w-96">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="searchInput" oninput="renderTeachersGrid()" placeholder="搜索教师姓名、首字母..." 
+                 class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+        </div>
+        <div class="flex items-center space-x-6 text-sm text-slate-600">
+          <div><span class="font-bold text-indigo-600 text-base" id="statTotalTeachers">19</span> 位教师</div>
+          <div class="h-4 w-px bg-slate-200"></div>
+          <div>已结题合作：<span class="font-semibold text-emerald-600" id="statCompleted">0</span> 项</div>
+          <div class="h-4 w-px bg-slate-200"></div>
+          <div>在研合作：<span class="font-semibold text-amber-600" id="statOngoing">0</span> 项</div>
+        </div>
       </div>
-      
-      <div class="flex items-center space-x-6 text-sm text-slate-600">
-        <div><span class="font-bold text-indigo-600 text-base" id="totalTeachers">19</span> 位合作教师</div>
-        <div class="h-4 w-px bg-slate-200"></div>
-        <div>已结题合作：<span class="font-semibold text-emerald-600" id="totalCompleted">0</span> 项</div>
-        <div class="h-4 w-px bg-slate-200"></div>
-        <div>在研合作：<span class="font-semibold text-amber-600" id="totalOngoing">0</span> 项</div>
-      </div>
+
+      <!-- 19位教师网格卡片 -->
+      <div id="teachersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </div>
 
-    <!-- Teacher Grid Container -->
-    <div id="teacherGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- 动态插入教师卡片 -->
+    <!-- 视图二：合作研究总览 -->
+    <div id="viewProjects" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-2">
+          <button onclick="filterProjectStatus('all')" id="filterAll" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition">全部合作项目</button>
+          <button onclick="filterProjectStatus('ongoing')" id="filterOngoing" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">在研合作</button>
+          <button onclick="filterProjectStatus('completed')" id="filterCompleted" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">已结题合作</button>
+        </div>
+        <div class="relative w-full md:w-80">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="projectSearchInput" oninput="renderProjectsList()" placeholder="搜索课题名称、成员、分工..." 
+                 class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+        </div>
+      </div>
+
+      <!-- 项目卡片列表 -->
+      <div id="projectsList" class="space-y-4"></div>
     </div>
 
   </main>
@@ -74,13 +98,13 @@
   <footer class="bg-slate-100 border-t border-slate-200 mt-12 py-4">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex justify-between items-center">
       <p>© 2026 ZM Research Team. All rights reserved.</p>
-      <p>数据实时同步自云端存储</p>
+      <p>数据双向联动自云端存储</p>
     </div>
   </footer>
 
   <!-- App Script -->
   <script>
-    // 微信小程序同步的准确 19 位教师名录（带拼音首字母缩写）
+    // 微信小程序同步的准确 19 位教师名录
     const initialTeachers = [
       { name: "陈玉伟", initials: "CYW" },
       { name: "段泳欣", initials: "DYX" },
@@ -104,6 +128,7 @@
     ];
 
     let collaborationsData = [];
+    let currentProjectFilter = 'all';
 
     async function fetchData() {
       try {
@@ -113,29 +138,46 @@
           collaborationsData = json.items || [];
           localStorage.setItem('zm_collaborations_backup', JSON.stringify(collaborationsData));
         } else {
-          throw new Error("Cloud fetch failed");
+          throw new Error("Fetch failed");
         }
       } catch (e) {
-        console.warn("Using local cache fallback");
         const cache = localStorage.getItem('zm_collaborations_backup');
         if (cache) collaborationsData = JSON.parse(cache);
       }
-      renderGrid();
+      renderTeachersGrid();
+      renderProjectsList();
     }
 
-    function renderGrid() {
+    function switchView(view) {
+      const btnTeachers = document.getElementById('btnViewTeachers');
+      const btnProjects = document.getElementById('btnViewProjects');
+      const viewTeachers = document.getElementById('viewTeachers');
+      const viewProjects = document.getElementById('viewProjects');
+
+      if (view === 'teachers') {
+        btnTeachers.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition bg-indigo-600 text-white shadow-sm";
+        btnProjects.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition text-indigo-300 hover:text-white";
+        viewTeachers.classList.remove('hidden');
+        viewProjects.classList.add('hidden');
+      } else {
+        btnProjects.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition bg-indigo-600 text-white shadow-sm";
+        btnTeachers.className = "px-3 py-1.5 rounded-md text-xs font-semibold transition text-indigo-300 hover:text-white";
+        viewProjects.classList.remove('hidden');
+        viewTeachers.classList.add('hidden');
+      }
+    }
+
+    function renderTeachersGrid() {
       const searchKey = document.getElementById('searchInput').value.toLowerCase().trim();
-      const grid = document.getElementById('teacherGrid');
+      const grid = document.getElementById('teachersGrid');
       grid.innerHTML = '';
 
       let grandCompleted = 0;
       let grandOngoing = 0;
 
-      // 按缩写字母排序
       const sortedTeachers = [...initialTeachers].sort((a, b) => a.initials.localeCompare(b.initials));
 
       sortedTeachers.forEach(teacher => {
-        // 匹配后台录入的合作项目
         const teacherCollabs = collaborationsData.filter(item => 
           item.members && item.members.includes(teacher.name)
         );
@@ -156,25 +198,21 @@
 
         const totalCollabs = teacherCollabs.length;
         
-        // 热度指标判断
-        let heatBadge = '<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded"><i class="fa-solid fa-temperature-empty text-slate-400"></i> 常规</span>';
+        // 活跃度根据研究数量动态计算
+        let heatBadge = '<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded"><i class="fa-solid fa-temperature-empty"></i> 常规</span>';
         if (totalCollabs >= 3) {
-          heatBadge = '<span class="text-xs font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100"><i class="fa-solid fa-fire text-rose-500"></i> 高热度</span>';
+          heatBadge = '<span class="text-xs font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100"><i class="fa-solid fa-fire text-rose-500"></i> 高热度 (' + totalCollabs + ')</span>';
         } else if (totalCollabs >= 1) {
-          heatBadge = '<span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100"><i class="fa-solid fa-fire-flame-curved text-amber-500"></i> 活跃</span>';
+          heatBadge = '<span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100"><i class="fa-solid fa-fire-flame-curved text-amber-500"></i> 活跃 (' + totalCollabs + ')</span>';
         }
 
-        // 搜索匹配
-        const matchSearch = teacher.name.toLowerCase().includes(searchKey) || 
-                            teacher.initials.toLowerCase().includes(searchKey);
-
-        if (!matchSearch) return;
+        if (!teacher.name.toLowerCase().includes(searchKey) && !teacher.initials.toLowerCase().includes(searchKey)) return;
 
         const cardHTML = `
-          <div class="teacher-card bg-white rounded-xl border border-slate-200/90 p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
+          <div class="card-hover bg-white rounded-xl border border-slate-200/90 p-5 flex flex-col justify-between shadow-sm">
             <div class="flex items-start justify-between mb-4">
               <div class="flex items-center space-x-3">
-                <div class="w-11 h-11 bg-indigo-100 text-indigo-700 font-bold text-sm rounded-full flex items-center justify-center tracking-wider border border-indigo-200">
+                <div class="w-11 h-11 bg-indigo-100 text-indigo-700 font-bold text-sm rounded-full flex items-center justify-center border border-indigo-200">
                   ${teacher.initials}
                 </div>
                 <div>
@@ -186,11 +224,11 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 my-3 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-center">
-              <div class="border-r border-slate-200 pr-1">
+              <div class="border-r border-slate-200 pr-1 cursor-pointer hover:opacity-75 transition" onclick=" jumpToProjectsForTeacher('${teacher.name}', 'completed')">
                 <div class="text-xs text-slate-500 mb-0.5">已完成合作</div>
                 <div class="text-lg font-bold text-emerald-600">${completedCount}</div>
               </div>
-              <div class="pl-1">
+              <div class="pl-1 cursor-pointer hover:opacity-75 transition" onclick="jumpToProjectsForTeacher('${teacher.name}', 'ongoing')">
                 <div class="text-xs text-slate-500 mb-0.5">进行中合作</div>
                 <div class="text-lg font-bold text-amber-600">${ongoingCount}</div>
               </div>
@@ -198,19 +236,109 @@
 
             <div class="mt-2 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
               <span>参与课题总计: <strong class="text-slate-700">${totalCollabs}</strong> 项</span>
+              <button onclick="jumpToProjectsForTeacher('${teacher.name}', 'all')" class="text-indigo-600 hover:underline font-medium">查看详情 &rarr;</button>
             </div>
           </div>
         `;
         grid.innerHTML += cardHTML;
       });
 
-      document.getElementById('totalTeachers').innerText = sortedTeachers.length;
-      document.getElementById('totalCompleted').innerText = grandCompleted;
-      document.getElementById('totalOngoing').innerText = grandOngoing;
+      document.getElementById('statTotalTeachers').innerText = sortedTeachers.length;
+      document.getElementById('statCompleted').innerText = grandCompleted;
+      document.getElementById('statOngoing').innerText = grandOngoing;
     }
 
-    function filterTeachers() {
-      renderGrid();
+    function jumpToProjectsForTeacher(teacherName, statusType) {
+      switchView('projects');
+      document.getElementById('projectSearchInput').value = teacherName;
+      if(statusType !== 'all') {
+        filterProjectStatus(statusType);
+      } else {
+        filterProjectStatus('all');
+      }
+      renderProjectsList();
+    }
+
+    function filterProjectStatus(status) {
+      currentProjectFilter = status;
+      ['all', 'ongoing', 'completed'].forEach(s => {
+        const btn = document.getElementById('filter' + s.charAt(0).toUpperCase() + s.slice(1));
+        if(s === status) {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition shadow-sm";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition";
+        }
+      });
+      renderProjectsList();
+    }
+
+    function renderProjectsList() {
+      const searchKey = document.getElementById('projectSearchInput').value.toLowerCase().trim();
+      const container = document.getElementById('projectsList');
+      container.innerHTML = '';
+
+      const filtered = collaborationsData.filter(item => {
+        const title = (item.title || "").toLowerCase();
+        const members = (item.members || []).join(' ').toLowerCase();
+        const contribution = (item.contribution || "").toLowerCase();
+        const student = (item.student || "").toLowerCase();
+
+        const matchSearch = title.includes(searchKey) || members.includes(searchKey) || contribution.includes(searchKey) || student.includes(searchKey);
+        
+        const isCompleted = item.status === "已结题" || (item.endDate && item.endDate < "2026-01-01");
+        if (currentProjectFilter === 'ongoing' && isCompleted) return false;
+        if (currentProjectFilter === 'completed' && !isCompleted) return false;
+
+        return matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bg-white rounded-xl p-12 text-center text-slate-400 border border-slate-200">没有找到相关的合作研究项目</div>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isCompleted = item.status === "已结题" || (item.endDate && item.endDate < "2026-01-01");
+        const badge = isCompleted 
+          ? '<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-md border border-emerald-200"><i class="fa-solid fa-check-circle mr-1"></i> 已结题</span>'
+          : '<span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-md border border-amber-200"><i class="fa-solid fa-spinner mr-1"></i> 在研中</span>';
+
+        const membersBadges = (item.members || []).map(m => `<span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded border border-indigo-100 font-medium">${m}</span>`).join(' ');
+
+        const cardHTML = `
+          <div class="bg-white rounded-xl p-6 border border-slate-200/90 shadow-sm hover:shadow transition">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 mb-1">${item.title || '未命名课题'}</h3>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs text-slate-500">合作成员:</span>
+                  ${membersBadges}
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                ${badge}
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm">
+              <div>
+                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-pen-nib mr-1"></i> 合作分工与贡献</h4>
+                <p class="text-slate-700">${item.contribution || '暂无说明'}</p>
+              </div>
+              <div>
+                <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1"><i class="fa-solid fa-trophy mr-1"></i> 合作预期 / 实际成果</h4>
+                <p class="text-slate-700">${item.result || '暂无成果记录'}</p>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+              <span><i class="fa-regular fa-calendar mr-1"></i> 周期: ${item.startDate || '未设定'} ~ ${item.endDate || '至今'}</span>
+              <span><i class="fa-solid fa-user-graduate mr-1"></i> 执行学生: ${item.student || '未指定'}</span>
+            </div>
+          </div>
+        `;
+        container.innerHTML += cardHTML;
+      });
     }
 
     window.addEventListener('DOMContentLoaded', fetchData);
