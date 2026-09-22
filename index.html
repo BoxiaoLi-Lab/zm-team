@@ -1,909 +1,360 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZM团队合作管理系统</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & React DOM CDN -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <!-- Babel for in-browser JSX parsing -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZM 团队 - 科研合作管理系统</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased min-h-screen">
-    <div id="root"></div>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+  <div id="root"></div>
 
-    <script type="text/babel">
+  <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    // SVG Icons
-    const Plus = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
-    );
-    const ArrowLeft = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-    );
-    const Trash2 = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-    );
-    const Edit2 = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    );
-    const X = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
-    );
-    const CheckCircle = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    );
-    const Clock = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    );
-    const Users = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-    );
-    const Search = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-    );
-    const BarChart3 = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 20V10M12 20V4M6 20v-6"/></svg>
-    );
-    const Grid = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-    );
-    const FileText = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-    );
-    const Calendar = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-    );
-    const AlertCircle = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    );
-    const Sparkles = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-    );
-    const Filter = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-    );
-    const Award = ({ className = "w-5 h-5" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15l-2 5l2-1l2 1l-2-5M12 2a6 6 0 00-6 6c0 3.314 2.686 6 6 6s6-2.686 6-6a6 6 0 00-6-6z"/></svg>
-    );
-
-    const TEACHERS = [
-      '陈玉伟', '段泳欣', '蒋敏', '李柏霄', '李明杰', 
-      '刘云霄', '孙依晗', '王纲', '王杰', '王淑雪', 
-      '乌皓', '杨洪生', '袁媛', '张建明', '张晓芳', 
-      '张泽军', '周立娟', '周丽娟', '宗鲁'
-    ];
-
-    const INITIAL_DEMO_DATA = [
-      {
-        members: ['陈玉伟', '段泳欣', '李明杰'],
-        topic: '高分子自修复材料的微观结构调控机制',
-        student: '王小明、张强',
-        startDate: '2025-01-01',
-        endDate: '2026-12-31',
-        labor: '陈玉伟团队负责材料合成，段泳欣团队负责性能表征，李明杰团队负责数值模拟。',
-        outputs: '已发表 JACS 论文 1 篇，申请发明专利 2 项。'
-      },
-      {
-        members: ['张建明', '袁媛'],
-        topic: '柔性电子器件在生物传感中的应用研究',
-        student: '李华',
-        startDate: '2024-03-01',
-        endDate: '2025-06-30',
-        labor: '张建明负责传感器设计，袁媛负责细胞毒性测试与生物兼容性评价。',
-        outputs: '已结题，发表 2 篇 SCI 一区论文。'
-      },
-      {
-        members: ['王纲', '乌皓', '宗鲁'],
-        topic: '催化剂表界面协同催化制氢效率提升研究',
-        student: '赵磊、孙梅',
-        startDate: '2025-06-01',
-        endDate: '2027-05-31',
-        labor: '王纲主导催化剂原位合成，乌皓负责光反应器搭建，宗鲁进行密度泛函理论计算。',
-        outputs: '项目进行中，已完成中试阶段样品制备。'
-      }
-    ];
+    // 内置 SVG 图标组件
+    const Icons = {
+      Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>,
+      Users: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>,
+      BookOpen: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>,
+      Calendar: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>,
+      GraduationCap: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>,
+      Settings: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
+      ExternalLink: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>,
+      Refresh: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
+      Sparkles: () => <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+    };
 
     function App() {
-      const [activeTab, setActiveTab] = useState('grid');
-      const [view, setView] = useState('dashboard');
       const [collaborations, setCollaborations] = useState([]);
-      const [editingIndex, setEditingIndex] = useState(-1);
-      
-      const [formData, setFormData] = useState({
-        members: ['', '', ''],
-        topic: '',
-        student: '',
-        startDate: '2026-01-01',
-        endDate: '2026-12-31',
-        labor: '',
-        outputs: ''
-      });
-      const [formError, setFormError] = useState('');
-
-      const [selectedTeacher, setSelectedTeacher] = useState(null);
-      const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
-      const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
+      const [loading, setLoading] = useState(true);
       const [searchTerm, setSearchTerm] = useState('');
-      const [statusFilter, setStatusFilter] = useState('all');
-      const [toastMessage, setToastMessage] = useState('');
+      const [selectedMember, setSelectedMember] = useState('ALL');
+      const [dataSource, setDataSource] = useState('');
 
-      const showToast = (msg) => {
-        setToastMessage(msg);
-        setTimeout(() => setToastMessage(''), 2500);
+      // 加载数据逻辑：优先 fetch JSON 文件，失败则降级使用 localStorage
+      const fetchData = () => {
+        setLoading(true);
+        fetch('./data/collaborations.json?v=' + Date.now())
+          .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+          })
+          .then(data => {
+            if (data && Array.isArray(data.items)) {
+              setCollaborations(data.items);
+              setDataSource('云端文件 (data/collaborations.json)');
+            } else if (Array.isArray(data)) {
+              setCollaborations(data);
+              setDataSource('云端文件 (data/collaborations.json)');
+            } else {
+              throw new Error('Invalid format');
+            }
+          })
+          .catch(err => {
+            console.log('读取 JSON 文件失败或文件不存在，回退至本地存储:', err);
+            const saved = localStorage.getItem('zm_collaborations');
+            if (saved) {
+              try {
+                setCollaborations(JSON.parse(saved));
+                setDataSource('本地存储 (localStorage)');
+              } catch (e) {
+                setCollaborations(getInitialData());
+                setDataSource('默认示例数据');
+              }
+            } else {
+              setCollaborations(getInitialData());
+              setDataSource('默认示例数据');
+            }
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       };
 
       useEffect(() => {
-        const saved = localStorage.getItem('zm_team_collaborations');
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            setCollaborations(Array.isArray(parsed) ? parsed : INITIAL_DEMO_DATA);
-          } catch (e) {
-            setCollaborations(INITIAL_DEMO_DATA);
-          }
-        } else {
-          setCollaborations(INITIAL_DEMO_DATA);
-        }
+        fetchData();
       }, []);
 
-      useEffect(() => {
-        if (collaborations.length > 0) {
-          localStorage.setItem('zm_team_collaborations', JSON.stringify(collaborations));
-        }
+      // 默认示例数据
+      function getInitialData() {
+        return [
+          {
+            members: ["张建明", "李柏霄"],
+            topic: "自修复聚氨酯分子设计与结构表征",
+            student: "张三",
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
+            labor: "张建明团队负责材料分子合成与力学测试；李柏霄团队负责核磁及微观表征分析。",
+            outputs: "预估发表 JACS / Angew 高水平研究论文 1 篇，申报发明专利 1 项"
+          }
+        ];
+      }
+
+      // 获取所有独立参与老师列表
+      const allMembers = useMemo(() => {
+        const set = new Set();
+        collaborations.forEach(item => {
+          if (Array.isArray(item.members)) {
+            item.members.forEach(m => set.add(m));
+          }
+        });
+        return Array.from(set);
       }, [collaborations]);
 
-      const today = new Date().toISOString().split('T')[0];
+      // 筛选过滤
+      const filteredItems = useMemo(() => {
+        return collaborations.filter(item => {
+          const matchesSearch = 
+            (item.topic || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.student || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.labor || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.outputs || '').toLowerCase().includes(searchTerm.toLowerCase());
+          
+          const matchesMember = selectedMember === 'ALL' || 
+            (Array.isArray(item.members) && item.members.includes(selectedMember));
 
+          return matchesSearch && matchesMember;
+        });
+      }, [collaborations, searchTerm, selectedMember]);
+
+      // 统计数据
       const stats = useMemo(() => {
-        let completed = {};
-        let ongoing = {};
-
-        collaborations.forEach(c => {
-          const members = c.members || [];
-          const isCompleted = c.endDate && c.endDate < today;
-
-          members.forEach(m => {
-            if (!m) return;
-            const cleanName = m.trim();
-            if (isCompleted) {
-              completed[cleanName] = (completed[cleanName] || 0) + 1;
-            } else {
-              ongoing[cleanName] = (ongoing[cleanName] || 0) + 1;
-            }
-          });
-        });
-        return { completed, ongoing };
-      }, [collaborations, today]);
-
-      const handleTeacherClick = (teacherName) => {
-        const related = collaborations
-          .map((item, index) => ({ item, index }))
-          .filter(({ item }) => item.members && item.members.includes(teacherName));
-
-        if (related.length === 0) {
-          setSelectedTeacher(teacherName);
-          setIsTeacherModalOpen(true);
-        } else if (related.length === 1) {
-          openFormForEdit(related[0].item, related[0].index);
-        } else {
-          setSelectedTeacher(teacherName);
-          setIsTeacherModalOpen(true);
-        }
-      };
-
-      const openFormForNew = (presetTeacher = '') => {
-        setEditingIndex(-1);
-        setFormData({
-          members: [presetTeacher, '', ''],
-          topic: '',
-          student: '',
-          startDate: '2026-01-01',
-          endDate: '2026-12-31',
-          labor: '',
-          outputs: ''
-        });
-        setFormError('');
-        setView('form');
-        setIsTeacherModalOpen(false);
-      };
-
-      const openFormForEdit = (item, index) => {
-        setEditingIndex(index);
-        const m = [...(item.members || [])];
-        while (m.length < 3) m.push('');
-        
-        setFormData({
-          members: [m[0] || '', m[1] || '', m[2] || ''],
-          topic: item.topic || '',
-          student: item.student || '',
-          startDate: item.startDate || '2026-01-01',
-          endDate: item.endDate || '2026-12-31',
-          labor: item.labor || '',
-          outputs: item.outputs || ''
-        });
-        setFormError('');
-        setView('form');
-        setIsTeacherModalOpen(false);
-      };
-
-      const handleFormSubmit = (e) => {
-        e.preventDefault();
-        setFormError('');
-
-        const validMembers = formData.members.filter(m => m && m.trim() !== '');
-
-        if (validMembers.length === 0) {
-          setFormError('请至少选择一位合作者（主合作者必选）');
-          return;
-        }
-
-        const uniqueSet = new Set(validMembers);
-        if (uniqueSet.size !== validMembers.length) {
-          setFormError('合作者不能重复选择，请调整选择');
-          return;
-        }
-
-        if (!formData.topic.trim()) {
-          setFormError('请填写合作研究课题');
-          return;
-        }
-
-        const newCollab = {
-          members: validMembers,
-          topic: formData.topic.trim(),
-          student: formData.student.trim(),
-          startDate: formData.startDate,
-          endDate: formData.endDate,
-          labor: formData.labor.trim(),
-          outputs: formData.outputs.trim()
-        };
-
-        let updated = [...collaborations];
-        if (editingIndex >= 0) {
-          updated[editingIndex] = newCollab;
-          showToast('合作项目更新成功！');
-        } else {
-          updated.push(newCollab);
-          showToast('新建科研合作项目成功！');
-        }
-
-        setCollaborations(updated);
-        setView('dashboard');
-      };
-
-      const confirmDelete = () => {
-        if (editingIndex === -1) return;
-        const updated = [...collaborations];
-        updated.splice(editingIndex, 1);
-        setCollaborations(updated);
-        showToast('已删除该合作记录');
-        setIsDeleteModalOpen(false);
-        setView('dashboard');
-      };
-
-      const teacherStatsList = useMemo(() => {
-        return TEACHERS.map(name => {
-          const done = stats.completed[name] || 0;
-          const ongoing = stats.ongoing[name] || 0;
-          const total = done + ongoing;
-          return { name, done, ongoing, total };
-        }).sort((a, b) => b.total - a.total);
-      }, [stats]);
-
-      const renderTeacherModal = () => {
-        if (!isTeacherModalOpen || !selectedTeacher) return null;
-
-        const related = collaborations
-          .map((item, index) => ({ item, index }))
-          .filter(({ item }) => item.members && item.members.includes(selectedTeacher));
-
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100">
-              <div className="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-white text-sm">
-                    {selectedTeacher[0]}
-                  </div>
-                  <h3 className="font-bold text-lg">{selectedTeacher} 老师的合作记录</h3>
-                </div>
-                <button onClick={() => setIsTeacherModalOpen(false)} className="text-white/80 hover:text-white rounded-full p-1">
-                  <X />
-                </button>
-              </div>
-
-              <div className="p-6 max-h-[65vh] overflow-y-auto space-y-3">
-                {related.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-600 font-medium">{selectedTeacher} 暂无科研合作记录</p>
-                    <p className="text-gray-400 text-sm mt-1">您可以直接以该老师为合作者发起一项新的课题合作。</p>
-                  </div>
-                ) : (
-                  related.map(({ item, index }) => {
-                    const isCompleted = item.endDate && item.endDate < today;
-                    return (
-                      <div 
-                        key={index}
-                        onClick={() => openFormForEdit(item, index)}
-                        className="p-4 rounded-xl border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer bg-gray-50/50 hover:bg-blue-50/30 group"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                            isCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                          }`}>
-                            {isCompleted ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
-                            {isCompleted ? '已完成' : '进行中'}
-                          </span>
-                          <span className="text-xs text-gray-400 flex items-center">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {item.startDate} ~ {item.endDate}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {item.topic}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          <span className="font-medium text-gray-700">合作成员：</span>{item.members.join('、')}
-                        </p>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                <button onClick={() => setIsTeacherModalOpen(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
-                  取消
-                </button>
-                <button
-                  onClick={() => openFormForNew(selectedTeacher)}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm"
-                >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  以此人为合作者新建合作
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      };
+        const totalProjects = collaborations.length;
+        const totalMembers = allMembers.length;
+        const students = new Set(collaborations.map(c => c.student).filter(Boolean)).size;
+        return { totalProjects, totalMembers, students };
+      }, [collaborations, allMembers]);
 
       return (
-        <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
-          {toastMessage && (
-            <div className="fixed top-5 right-5 z-50 bg-gray-900/90 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-sm font-medium">{toastMessage}</span>
-            </div>
-          )}
-
-          <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md">
-                  ZM
+        <div className="min-h-screen flex flex-col justify-between">
+          <div>
+            {/* 顶栏 Header */}
+            <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md">
+                    <Icons.BookOpen />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold tracking-tight">ZM 团队科研合作管理系统</h1>
+                    <p className="text-xs text-slate-400">Research Collaboration & Outcomes Platform</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900 leading-none">
-                    ZM团队合作管理系统
-                  </h1>
-                  <p className="text-xs text-gray-500 mt-1">科研协作 · 矩阵视图 · 成果管理</p>
+
+                <div className="flex items-center space-x-3">
+                  <button 
+                    onClick={fetchData}
+                    className="flex items-center space-x-1 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition"
+                    title="刷新最新云端数据"
+                  >
+                    <Icons.Refresh />
+                    <span>刷新</span>
+                  </button>
+                  <a
+                    href="./admin/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm hover:shadow"
+                  >
+                    <Icons.Settings />
+                    <span>管理后台 (Decap CMS)</span>
+                    <Icons.ExternalLink />
+                  </a>
+                </div>
+              </div>
+            </header>
+
+            {/* 主要内容区域 */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+              
+              {/* 统计看板 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center space-x-4">
+                  <div className="p-3.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <Icons.BookOpen />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-slate-900">{stats.totalProjects}</div>
+                    <div className="text-xs font-medium text-slate-500">开展合作课题总数</div>
+                  </div>
+                </div>
+
+                <div className="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center space-x-4">
+                  <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <Icons.Users />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-slate-900">{stats.totalMembers}</div>
+                    <div className="text-xs font-medium text-slate-500">参与合作教师人数</div>
+                  </div>
+                </div>
+
+                <div className="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/80 flex items-center space-x-4">
+                  <div className="p-3.5 bg-amber-50 text-amber-600 rounded-xl">
+                    <Icons.Sparkles />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-slate-900">{stats.students}</div>
+                    <div className="text-xs font-medium text-slate-500">对接执行学生总数</div>
+                  </div>
                 </div>
               </div>
 
-              {view === 'dashboard' && (
-                <button
-                  onClick={() => openFormForNew()}
-                  className="hidden sm:inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow-sm transition-all"
-                >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  新建科研合作
-                </button>
-              )}
-            </div>
-          </header>
-
-          <main className="flex-1 max-w-6xl w-full mx-auto px-3 sm:px-6 py-6">
-            {view === 'dashboard' ? (
-              <div>
-                <div className="bg-white p-1.5 rounded-2xl shadow-xs border border-gray-200/80 mb-6 flex space-x-1">
-                  <button
-                    onClick={() => setActiveTab('grid')}
-                    className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 ${
-                      activeTab === 'grid' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Grid className="w-4 h-4" />
-                    <span>教师阵列矩阵</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('list')}
-                    className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 ${
-                      activeTab === 'list' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4" />
-                    <span>合作列表 ({collaborations.length})</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('hotspots')}
-                    className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center space-x-2 ${
-                      activeTab === 'hotspots' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    <span>合作热点分析</span>
-                  </button>
+              {/* 搜索与筛选工具栏 */}
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
+                {/* 搜索框 */}
+                <div className="relative w-full md:w-96">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Icons.Search />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    placeholder="搜索课题名称、学生姓名、贡献或成果..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                  />
                 </div>
 
-                {activeTab === 'grid' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4 px-1">
-                      <div className="text-xs sm:text-sm text-gray-500 flex items-center space-x-4">
-                        <span className="flex items-center">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block mr-1.5"></span>
-                          左上角：已完成合作
-                        </span>
-                        <span className="flex items-center">
-                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block mr-1.5"></span>
-                          右上角：进行中合作
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400">共 {TEACHERS.length} 位教师</span>
-                    </div>
+                {/* 教师标签筛选 */}
+                <div className="flex items-center space-x-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+                  <span className="text-xs font-medium text-slate-500 whitespace-nowrap">筛选教师:</span>
+                  <button
+                    onClick={() => setSelectedMember('ALL')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                      selectedMember === 'ALL'
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    全部 ({collaborations.length})
+                  </button>
+                  {allMembers.map(member => (
+                    <button
+                      key={member}
+                      onClick={() => setSelectedMember(member)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                        selectedMember === member
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {member}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
-                      {TEACHERS.map((teacher, index) => {
-                        const completedCount = stats.completed[teacher] || 0;
-                        const ongoingCount = stats.ongoing[teacher] || 0;
-
-                        return (
-                          <div
-                            key={index}
-                            onClick={() => handleTeacherClick(teacher)}
-                            className="relative bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:border-blue-400 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center group active:scale-95"
-                          >
-                            {completedCount > 0 && (
-                              <div className="absolute top-2 left-2 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border border-emerald-200 leading-none">
-                                {completedCount}
-                              </div>
-                            )}
-
-                            {ongoingCount > 0 && (
-                              <div className="absolute top-2 right-2 bg-rose-100 text-rose-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border border-rose-200 leading-none">
-                                {ongoingCount}
-                              </div>
-                            )}
-
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white font-bold text-base sm:text-lg flex items-center justify-center my-2 transition-all">
-                              {teacher[0]}
-                            </div>
-
-                            <span className="text-xs sm:text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors text-center">
-                              {teacher}
-                            </span>
+              {/* 合作卡片列表 */}
+              {loading ? (
+                <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80">
+                  <div className="inline-block animate-spin text-indigo-600 mb-3">
+                    <Icons.Refresh />
+                  </div>
+                  <p className="text-sm text-slate-500">正在加载最新科研合作记录...</p>
+                </div>
+              ) : filteredItems.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80">
+                  <p className="text-slate-500 text-sm">未找到符合条件的合作记录</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6">
+                  {filteredItems.map((item, idx) => (
+                    <div 
+                      key={idx}
+                      className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md border border-slate-200/80 transition duration-200 space-y-4"
+                    >
+                      {/* 头部：题目与成员 */}
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 border-b border-slate-100 pb-4">
+                        <div className="space-y-2">
+                          <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                            {item.topic}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-slate-400 font-medium">合作成员:</span>
+                            {Array.isArray(item.members) && item.members.map((m, i) => (
+                              <span 
+                                key={i}
+                                className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100"
+                              >
+                                {m}
+                              </span>
+                            ))}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                        </div>
 
-                {activeTab === 'list' && (
-                  <div className="space-y-4">
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-3 items-center justify-between">
-                      <div className="relative w-full sm:w-72">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="搜索课题、教师或学生..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div className="flex items-center space-x-2 w-full sm:w-auto">
-                        <Filter className="w-4 h-4 text-gray-400" />
-                        <select
-                          value={statusFilter}
-                          onChange={(e) => setStatusFilter(e.target.value)}
-                          className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none"
-                        >
-                          <option value="all">全部分工状态</option>
-                          <option value="ongoing">进行中</option>
-                          <option value="completed">已完成</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      {collaborations
-                        .map((item, index) => ({ item, index }))
-                        .filter(({ item }) => {
-                          const isCompleted = item.endDate && item.endDate < today;
-                          if (statusFilter === 'ongoing' && isCompleted) return false;
-                          if (statusFilter === 'completed' && !isCompleted) return false;
-
-                          if (searchTerm.trim() !== '') {
-                            const term = searchTerm.toLowerCase();
-                            const topicMatch = item.topic?.toLowerCase().includes(term);
-                            const studentMatch = item.student?.toLowerCase().includes(term);
-                            const memberMatch = item.members?.some(m => m.toLowerCase().includes(term));
-                            return topicMatch || studentMatch || memberMatch;
-                          }
-                          return true;
-                        })
-                        .map(({ item, index }) => {
-                          const isCompleted = item.endDate && item.endDate < today;
-                          return (
-                            <div key={index} className="bg-white rounded-xl p-5 border border-gray-200 shadow-xs">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                                <div className="flex items-center space-x-2">
-                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                    isCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                                  }`}>
-                                    {isCompleted ? <CheckCircle className="w-3.5 h-3.5 mr-1" /> : <Clock className="w-3.5 h-3.5 mr-1" />}
-                                    {isCompleted ? '已完成' : '进行中'}
-                                  </span>
-                                  <h3 className="font-bold text-gray-900 text-base">{item.topic}</h3>
-                                </div>
-
-                                <div className="flex items-center space-x-3 text-xs text-gray-500">
-                                  <span className="flex items-center">
-                                    <Calendar className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                                    {item.startDate} 至 {item.endDate}
-                                  </span>
-                                  <button
-                                    onClick={() => openFormForEdit(item, index)}
-                                    className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium p-1 hover:bg-blue-50 rounded"
-                                  >
-                                    <Edit2 className="w-3.5 h-3.5 mr-1" />
-                                    编辑
-                                  </button>
-                                </div>
-                              </div>
-
-                              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm">
-                                <div>
-                                  <span className="text-gray-400 font-medium block mb-1">合作成员</span>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {item.members.map((m, idx) => (
-                                      <span key={idx} className="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-md text-xs font-medium border border-blue-100">
-                                        {m}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {item.student && (
-                                  <div>
-                                    <span className="text-gray-400 font-medium block mb-1">执行学生</span>
-                                    <span className="text-gray-700 font-medium">{item.student}</span>
-                                  </div>
-                                )}
-
-                                {item.labor && (
-                                  <div className="md:col-span-3">
-                                    <span className="text-gray-400 font-medium block mb-1">分工与贡献</span>
-                                    <p className="text-gray-600 text-xs bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                                      {item.labor}
-                                    </p>
-                                  </div>
-                                )}
-
-                                {item.outputs && (
-                                  <div className="md:col-span-3">
-                                    <span className="text-gray-400 font-medium block mb-1">合作成果</span>
-                                    <p className="text-emerald-900 text-xs bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
-                                      {item.outputs}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
+                        {/* 学生与周期 */}
+                        <div className="flex flex-wrap md:flex-col items-start md:items-end gap-2 text-xs text-slate-500">
+                          {item.student && (
+                            <div className="flex items-center space-x-1.5 bg-slate-100 px-2.5 py-1 rounded-md text-slate-700 font-medium">
+                              <Icons.GraduationCap />
+                              <span>执行学生: {item.student}</span>
                             </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                )}
+                          )}
+                          <div className="flex items-center space-x-1 text-slate-400">
+                            <Icons.Calendar />
+                            <span>{item.startDate || '未定'} ~ {item.endDate || '未定'}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                {activeTab === 'hotspots' && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="bg-white p-4 rounded-xl border border-gray-200">
-                        <span className="text-xs text-gray-500 font-medium">总合作项目</span>
-                        <div className="text-2xl font-black text-gray-900 mt-1">{collaborations.length}</div>
-                      </div>
-                      <div className="bg-white p-4 rounded-xl border border-gray-200">
-                        <span className="text-xs text-gray-500 font-medium">进行中项目</span>
-                        <div className="text-2xl font-black text-rose-600 mt-1">
-                          {collaborations.filter(c => c.endDate >= today).length}
+                      {/* 内容分工与成果 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm pt-1">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+                          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">合作分工与贡献</div>
+                          <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                            {item.labor || '暂未填写详细分工说明'}
+                          </p>
                         </div>
-                      </div>
-                      <div className="bg-white p-4 rounded-xl border border-gray-200">
-                        <span className="text-xs text-gray-500 font-medium">已结题项目</span>
-                        <div className="text-2xl font-black text-emerald-600 mt-1">
-                          {collaborations.filter(c => c.endDate < today).length}
-                        </div>
-                      </div>
-                      <div className="bg-white p-4 rounded-xl border border-gray-200">
-                        <span className="text-xs text-gray-500 font-medium">参与教师率</span>
-                        <div className="text-2xl font-black text-blue-600 mt-1">
-                          {Math.round((teacherStatsList.filter(t => t.total > 0).length / TEACHERS.length) * 100)}%
+
+                        <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-100/80 space-y-1">
+                          <div className="text-xs font-bold text-amber-700 uppercase tracking-wider flex items-center space-x-1">
+                            <span>合作预期/实际成果</span>
+                          </div>
+                          <p className="text-slate-800 font-medium leading-relaxed whitespace-pre-line">
+                            {item.outputs || '暂未填写预期成果'}
+                          </p>
                         </div>
                       </div>
                     </div>
-
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center space-x-2">
-                          <Award className="w-5 h-5 text-blue-600" />
-                          <h3 className="font-bold text-gray-900 text-base">教师科研合作活跃度榜单</h3>
-                        </div>
-                        <span className="text-xs text-gray-400">按参与项目总数降序排列</span>
-                      </div>
-
-                      <div className="space-y-4">
-                        {teacherStatsList.map((t, idx) => {
-                          const maxCollab = Math.max(...teacherStatsList.map(item => item.total), 1);
-
-                          return (
-                            <div key={idx} className="flex items-center space-x-3 text-xs sm:text-sm">
-                              <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                                idx === 0 ? 'bg-amber-100 text-amber-800' :
-                                idx === 1 ? 'bg-slate-200 text-slate-700' :
-                                idx === 2 ? 'bg-amber-700/10 text-amber-900' : 'bg-gray-100 text-gray-500'
-                              }`}>
-                                {idx + 1}
-                              </span>
-                              <span className="w-16 font-semibold text-gray-800">{t.name}</span>
-                              
-                              <div className="flex-1 bg-gray-100 h-3 rounded-full overflow-hidden flex">
-                                <div 
-                                  className="bg-emerald-500 h-full transition-all" 
-                                  style={{ width: `${(t.done / maxCollab) * 100}%` }}
-                                />
-                                <div 
-                                  className="bg-rose-500 h-full transition-all" 
-                                  style={{ width: `${(t.ongoing / maxCollab) * 100}%` }}
-                                />
-                              </div>
-
-                              <span className="w-16 text-right font-bold text-gray-700">
-                                {t.total} 项
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => openFormForNew()}
-                  className="fixed right-6 bottom-8 z-40 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg sm:hidden"
-                >
-                  <Plus className="w-8 h-8" />
-                </button>
-              </div>
-            ) : (
-              <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setView('dashboard')}
-                      className="p-1.5 rounded-lg bg-white/10 text-white"
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <h2 className="text-xl font-bold">
-                      {editingIndex !== -1 ? '编辑科研合作项目' : '新建科研合作项目'}
-                    </h2>
-                  </div>
+                  ))}
                 </div>
+              )}
+            </main>
+          </div>
 
-                <form onSubmit={handleFormSubmit} className="p-6 space-y-5">
-                  {formError && (
-                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm rounded-xl flex items-center space-x-2">
-                      <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{formError}</span>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                      合作成员选择 (至少选1位)
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <span className="text-xs text-gray-500 mb-1 block">第一合作者 (必选)</span>
-                        <select
-                          value={formData.members[0]}
-                          onChange={(e) => {
-                            const m = [...formData.members];
-                            m[0] = e.target.value;
-                            setFormData({ ...formData, members: m });
-                          }}
-                          className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">点击选择（必选）</option>
-                          {TEACHERS.map((t, i) => (
-                            <option key={i} value={t}>{t}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <span className="text-xs text-gray-500 mb-1 block">第二合作者 (可选)</span>
-                        <select
-                          value={formData.members[1]}
-                          onChange={(e) => {
-                            const m = [...formData.members];
-                            m[1] = e.target.value;
-                            setFormData({ ...formData, members: m });
-                          }}
-                          className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">点击选择（可选）</option>
-                          {TEACHERS.map((t, i) => (
-                            <option key={i} value={t}>{t}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <span className="text-xs text-gray-500 mb-1 block">第三合作者 (可选)</span>
-                        <select
-                          value={formData.members[2]}
-                          onChange={(e) => {
-                            const m = [...formData.members];
-                            m[2] = e.target.value;
-                            setFormData({ ...formData, members: m });
-                          }}
-                          className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">点击选择（可选）</option>
-                          {TEACHERS.map((t, i) => (
-                            <option key={i} value={t}>{t}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      合作研究课题 <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="例如：自修复聚氨酯分子设计"
-                      value={formData.topic}
-                      onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      执行学生
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="例如：张三、李四"
-                      value={formData.student}
-                      onChange={(e) => setFormData({ ...formData, student: e.target.value })}
-                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                        开始时间
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.startDate}
-                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                        结束时间
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.endDate}
-                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      合作贡献与分工
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="明确各方具体分工与贡献..."
-                      value={formData.labor}
-                      onChange={(e) => setFormData({ ...formData, labor: e.target.value })}
-                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500 resize-y"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                      合作成果
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="记录已取得或预期的成果..."
-                      value={formData.outputs}
-                      onChange={(e) => setFormData({ ...formData, outputs: e.target.value })}
-                      className="w-full text-sm bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:bg-white focus:ring-2 focus:ring-blue-500 resize-y"
-                    />
-                  </div>
-
-                  <div className="pt-4 flex flex-col sm:flex-row gap-3">
-                    <button
-                      type="submit"
-                      className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md text-sm"
-                    >
-                      {editingIndex !== -1 ? '保存并更新' : '确认创建'}
-                    </button>
-
-                    {editingIndex !== -1 && (
-                      <button
-                        type="button"
-                        onClick={() => setIsDeleteModalOpen(true)}
-                        className="px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl border border-rose-200 text-sm flex items-center justify-center space-x-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>删除此合作</span>
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </div>
-            )}
-          </main>
-
-          {renderTeacherModal()}
-
-          {/* Custom Delete Modal */}
-          {isDeleteModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-              <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">确认删除记录</h3>
-                <p className="text-sm text-gray-500 mb-6">确定要删除这条科研合作记录吗？删除后不可恢复。</p>
-                <div className="flex justify-end space-x-3">
-                  <button onClick={() => setIsDeleteModalOpen(false)} className="px-4 py-2 text-sm text-gray-600 font-medium">取消</button>
-                  <button onClick={confirmDelete} className="px-4 py-2 text-sm bg-rose-600 text-white font-medium rounded-lg">确认删除</button>
-                </div>
+          {/* 页脚 */}
+          <footer className="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+              <div>© 2026 ZM Research Team. All rights reserved.</div>
+              <div className="flex items-center space-x-2">
+                <span>数据来源: <strong className="text-slate-700">{dataSource}</strong></span>
               </div>
             </div>
-          )}
+          </footer>
         </div>
       );
     }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
-    </script>
+  </script>
 </body>
 </html>
