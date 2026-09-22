@@ -1,1 +1,31 @@
+backend:
+  name: github
+  repo: Boxiaoli-Lab/zm-team
+  branch: main
 
+media_folder: "uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "data"
+    label: "科研合作数据"
+    files:
+      - file: "data/collaborations.json"
+        label: "科研合作列表"
+        name: "collaborations"
+        fields:
+          - label: "合作记录列表"
+            name: "items"
+            widget: "list"
+            summary: "{{fields.topic}} - {{fields.members}}"
+            fields:
+              - label: "合作者成员"
+                name: "members"
+                widget: "list"
+                default: ["李柏霄"]
+              - { label: "合作课题", name: "topic", widget: "string" }
+              - { label: "执行学生", name: "student", widget: "string", required: false }
+              - { label: "开始时间", name: "startDate", widget: "string", default: "2026-01-01" }
+              - { label: "结束时间", name: "endDate", widget: "string", default: "2026-12-31" }
+              - { label: "合作贡献与分工", name: "labor", widget: "text", required: false }
+              - { label: "合作成果", name: "outputs", widget: "text", required: false }
