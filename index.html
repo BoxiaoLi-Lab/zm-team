@@ -8,8 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Netlify Identity Widget -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <style>
     .teacher-card {
       transition: all 0.25s ease-in-out;
@@ -52,7 +50,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="relative w-full md:w-96">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input type="text" id="searchInput" oninput="filterTeachers()" placeholder="搜索教师姓名、拼音首字母、研究方向..." 
+        <input type="text" id="searchInput" oninput="filterTeachers()" placeholder="搜索教师姓名、拼音首字母..." 
                class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
       </div>
       
@@ -76,33 +74,33 @@
   <footer class="bg-slate-100 border-t border-slate-200 mt-12 py-4">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex justify-between items-center">
       <p>© 2026 ZM Research Team. All rights reserved.</p>
-      <p>数据实时同步自 Git 仓库</p>
+      <p>数据实时同步自云端存储</p>
     </div>
   </footer>
 
   <!-- App Script -->
   <script>
-    // 19位教师初始名录（按照字母顺序排序，带拼音缩写及标识）
+    // 微信小程序同步的准确 19 位教师名录（带拼音首字母缩写）
     const initialTeachers = [
-      { id: "cai-lh", name: "蔡利华", initials: "CLH", pinyin: "Cai Lihua" },
-      { id: "chen-xf", name: "陈晓峰", initials: "CXF", pinyin: "Chen Xiaofeng" },
-      { id: "du-jb", name: "杜建波", initials: "DJB", pinyin: "Du Jianbo" },
-      { id: "feng-yj", name: "冯亚青", initials: "FYQ", pinyin: "Feng Yaqing" },
-      { id: "guo-hb", name: "郭海波", initials: "GHB", pinyin: "Guo Haibo" },
-      { id: "huang-mr", name: "黄明荣", initials: "HMR", pinyin: "Huang Mingrong" },
-      { id: "li-bx", name: "李柏霄", initials: "LBX", pinyin: "Li Baixiao" },
-      { id: "li-qm", name: "李启明", initials: "LQM", pinyin: "Li Qiming" },
-      { id: "liu-zh", name: "刘志华", initials: "LZH", pinyin: "Liu Zhihua" },
-      { id: "lu-yl", name: "卢咏来", initials: "LYL", pinyin: "Lu Yonglai" },
-      { id: "ma-yj", name: "马亚君", initials: "MYJ", pinyin: "Ma Yajun" },
-      { id: "sun-tl", name: "孙铁龙", initials: "STL", pinyin: "Sun Tielong" },
-      { id: "wang-yh", name: "王宇航", initials: "WYH", pinyin: "Wang Yuhang" },
-      { id: "wu-zm", name: "吴文明", initials: "WWM", pinyin: "Wu Wenming" },
-      { id: "xu-lh", name: "徐丽华", initials: "XLH", pinyin: "Xu Lihua" },
-      { id: "yang-hf", name: "杨海峰", initials: "YHF", pinyin: "Yang Haifeng" },
-      { id: "zhang-jm", name: "张建明", initials: "ZJM", pinyin: "Zhang Jianming" },
-      { id: "zhao-xr", name: "赵向荣", initials: "ZXR", pinyin: "Zhao Xiangrong" },
-      { id: "zhou-lh", name: "周立华", initials: "ZLH", pinyin: "Zhou Lihua" }
+      { name: "陈玉伟", initials: "CYW" },
+      { name: "段泳欣", initials: "DYX" },
+      { name: "蒋敏", initials: "JM" },
+      { name: "李柏霄", initials: "LBX" },
+      { name: "李明杰", initials: "LMJ" },
+      { name: "刘云霄", initials: "LYX" },
+      { name: "孙依晗", initials: "SYH" },
+      { name: "王纲", initials: "WG" },
+      { name: "王杰", initials: "WJ" },
+      { name: "王淑雪", initials: "WSX" },
+      { name: "乌皓", initials: "WH" },
+      { name: "杨洪生", initials: "YHS" },
+      { name: "袁媛", initials: "YY" },
+      { name: "张建明", initials: "ZJM" },
+      { name: "张晓芳", initials: "ZXF" },
+      { name: "张泽军", initials: "ZZJ" },
+      { name: "周立娟", initials: "ZLJ" },
+      { name: "周丽娟", initials: "ZLJ" },
+      { name: "宗鲁", initials: "ZL" }
     ];
 
     let collaborationsData = [];
@@ -133,21 +131,20 @@
       let grandCompleted = 0;
       let grandOngoing = 0;
 
-      // 按照字母顺序对教师排序
+      // 按缩写字母排序
       const sortedTeachers = [...initialTeachers].sort((a, b) => a.initials.localeCompare(b.initials));
 
       sortedTeachers.forEach(teacher => {
-        // 匹配该教师的合作记录
+        // 匹配后台录入的合作项目
         const teacherCollabs = collaborationsData.filter(item => 
           item.members && item.members.includes(teacher.name)
         );
 
-        // 计算正在进行/已完成数量
         let completedCount = 0;
         let ongoingCount = 0;
 
         teacherCollabs.forEach(collab => {
-          if (collab.status === "已结题" || collab.endDate < "2026-01-01") {
+          if (collab.status === "已结题" || (collab.endDate && collab.endDate < "2026-01-01")) {
             completedCount++;
           } else {
             ongoingCount++;
@@ -159,22 +156,20 @@
 
         const totalCollabs = teacherCollabs.length;
         
-        // 热度计算（合作项目越多热度图标越火热）
+        // 热度指标判断
         let heatBadge = '<span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded"><i class="fa-solid fa-temperature-empty text-slate-400"></i> 常规</span>';
         if (totalCollabs >= 3) {
-          heatBadge = '<span class="text-xs font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100"><i class="fa-solid fa-fire text-rose-500"></i> 极高热度</span>';
+          heatBadge = '<span class="text-xs font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100"><i class="fa-solid fa-fire text-rose-500"></i> 高热度</span>';
         } else if (totalCollabs >= 1) {
           heatBadge = '<span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100"><i class="fa-solid fa-fire-flame-curved text-amber-500"></i> 活跃</span>';
         }
 
-        // 搜索过滤
-        const matchSearch = teacher.name.includes(searchKey) || 
-                            teacher.initials.toLowerCase().includes(searchKey) || 
-                            teacher.pinyin.toLowerCase().includes(searchKey);
+        // 搜索匹配
+        const matchSearch = teacher.name.toLowerCase().includes(searchKey) || 
+                            teacher.initials.toLowerCase().includes(searchKey);
 
         if (!matchSearch) return;
 
-        // 构建卡片 HTML
         const cardHTML = `
           <div class="teacher-card bg-white rounded-xl border border-slate-200/90 p-5 flex flex-col justify-between shadow-sm relative overflow-hidden">
             <div class="flex items-start justify-between mb-4">
@@ -183,10 +178,8 @@
                   ${teacher.initials}
                 </div>
                 <div>
-                  <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
-                    ${teacher.name}
-                  </h3>
-                  <p class="text-xs text-slate-400">${teacher.pinyin}</p>
+                  <h3 class="font-bold text-slate-800 text-base">${teacher.name}</h3>
+                  <p class="text-xs text-slate-400">ZM Research Faculty</p>
                 </div>
               </div>
               <div>${heatBadge}</div>
@@ -203,8 +196,8 @@
               </div>
             </div>
 
-            <div class="mt-2 pt-3 border-t border-slate-100 flex justify-between items-center">
-              <span class="text-xs text-slate-500">参与合作课题: <strong class="text-slate-700">${totalCollabs}</strong> 项</span>
+            <div class="mt-2 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+              <span>参与课题总计: <strong class="text-slate-700">${totalCollabs}</strong> 项</span>
             </div>
           </div>
         `;
