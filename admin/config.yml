@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: Boxiaoli-Lab/zm-team
+  name: git-gateway
   branch: main
 
 media_folder: "uploads"
