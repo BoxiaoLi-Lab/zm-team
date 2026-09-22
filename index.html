@@ -86,7 +86,11 @@
                                             <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded">ZM Research Faculty</span>
                                         </div>
                                     </div>
-                                    <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md"><i class="fa-solid fa-book-bookmark text-[10px] mr-1 text-slate-400"></i>常规</span>
+                                    <!-- 动态相对量合作热度标签 -->
+                                    <span :class="teacher.heatClass" class="px-2 py-0.5 text-xs rounded-md inline-flex items-center gap-1 shadow-2xs">
+                                        <i :class="teacher.heatIcon" class="text-[10px]"></i>
+                                        {{ teacher.heatLabel }}
+                                    </span>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-3 my-4 py-3 border-y border-slate-100 bg-slate-50/50 rounded-lg px-3">
@@ -361,7 +365,6 @@
                 // 加载 content/collaborations 目录下的 Markdown 文件
                 const loadCollaborations = async () => {
                     try {
-                        // 使用 GitHub API 获取目录文件列表
                         const res = await fetch('https://api.github.com/repos/Boxiaoli-Lab/zm-team/contents/content/collaborations');
                         if (!res.ok) throw new Error('无法获取合作项目列表');
                         const files = await res.json();
@@ -373,7 +376,6 @@
                             const fileRes = await fetch(file.download_url);
                             const text = await fileRes.text();
                             
-                            // 解析 Markdown Frontmatter
                             const parsed = parseFrontmatter(text);
                             if (parsed) {
                                 loadedData.push(parsed);
@@ -382,7 +384,6 @@
                         collaborations.value = loadedData;
                     } catch (err) {
                         console.error('加载科研合作数据失败:', err);
-                        // 本地开发或无网络时给个默认空数组或演示数据
                         collaborations.value = [];
                     } finally {
                         loading.value = false;
@@ -415,9 +416,10 @@
                     loadCollaborations();
                 });
 
-                // 计算教师列表及各自的统计数据
+                // 计算教师列表及各自的统计数据和基于相对量的合作热度
                 const teachersWithStats = computed(() => {
-                    return teachersList.value.map(name => {
+                    // 1. 先统计每位老师的基础合作数据
+                    const rawList = teachersList.value.map(name => {
                         const teacherCollabs = collaborations.value.filter(c => c.members && c.members.includes(name));
                         const completedCount = teacherCollabs.filter(c => c.status === '已结题').length;
                         const ongoingCount = teacherCollabs.filter(c => c.status === '在研中').length;
@@ -428,6 +430,41 @@
                             completedCount,
                             ongoingCount,
                             totalCount: teacherCollabs.length
+                        };
+                    });
+
+                    // 2. 扫描全院找出参与课题总数的最高值 (作为相对量的基准 Max)
+                    let maxTotal = 0;
+                    rawList.forEach(t => {
+                        if (t.totalCount > maxTotal) {
+                            maxTotal = t.totalCount;
+                        }
+                    });
+
+                    // 3. 根据相对量（相比最高峰值的比例）动态赋予合作热度标签与样式
+                    return rawList.map(t => {
+                        let heatLabel = "📌 常规";
+                        let heatClass = "bg-slate-100 text-slate-600";
+                        let heatIcon = "fa-book-bookmark text-slate-400";
+
+                        if (maxTotal > 0 && t.totalCount > 0) {
+                            const ratio = t.totalCount / maxTotal;
+                            if (ratio >= 0.6) {
+                                heatLabel = "🔥 核心高热";
+                                heatClass = "bg-rose-50 text-rose-700 border border-rose-200 font-medium";
+                                heatIcon = "fa-fire text-rose-500";
+                            } else if (ratio >= 0.2) {
+                                heatLabel = "⚡ 活跃合作";
+                                heatClass = "bg-amber-50 text-amber-700 border border-amber-200 font-medium";
+                                heatIcon = "fa-bolt text-amber-500";
+                            }
+                        }
+
+                        return {
+                            ...t,
+                            heatLabel,
+                            heatClass,
+                            heatIcon
                         };
                     });
                 });
