@@ -12,8 +12,6 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- js-yaml 用于解析 Markdown frontmatter -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-    <!-- 引入自定义全局样式文件 -->
-    <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
@@ -86,8 +84,8 @@
                                             <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded">ZM Research Faculty</span>
                                         </div>
                                     </div>
-                                    <!-- 动态相对量合作热度标签 -->
-                                    <span :class="teacher.heatClass" class="px-2 py-0.5 text-xs rounded-md inline-flex items-center gap-1 shadow-2xs">
+                                    <!-- 相对量动态合作热度标签 -->
+                                    <span :class="teacher.heatClass" class="px-2.5 py-1 text-xs rounded-md inline-flex items-center gap-1 shadow-2xs font-medium">
                                         <i :class="teacher.heatIcon" class="text-[10px]"></i>
                                         {{ teacher.heatLabel }}
                                     </span>
@@ -193,7 +191,7 @@
 
         <!-- ================= 弹窗：教师详情与关联课题 ================= -->
         <div v-if="selectedTeacher" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 <!-- 弹窗头部 -->
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -267,7 +265,7 @@
 
         <!-- ================= 弹窗：课题详细信息 ================= -->
         <div v-if="selectedCollab" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-slate-900">科研合作课题详情</h2>
                     <button @click="selectedCollab = null" class="w-8 h-8 rounded-full bg-slate-200/60 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
@@ -390,15 +388,20 @@
                     }
                 };
 
-                // 简单的 YAML Frontmatter 解析器
+                // 简单的 YAML Frontmatter 解析器（带容错纠错）
                 const parseFrontmatter = (content) => {
                     const match = content.match(/^---\s*([\s\S]*?)\s*---([\s\S]*)$/);
                     if (!match) return null;
                     try {
                         const yamlHeader = jsyaml.load(match[1]);
+                        
+                        // 自动将历史数据中的“段泳欣”容错纠正为“段咏欣”
+                        let rawMembers = yamlHeader.members || [];
+                        let fixedMembers = rawMembers.map(m => m === '段泳欣' ? '段咏欣' : m);
+
                         return {
                             title: yamlHeader.title || '未命名课题',
-                            members: yamlHeader.members || [],
+                            members: fixedMembers,
                             status: yamlHeader.status || '在研中',
                             student: yamlHeader.student || '',
                             startDate: yamlHeader.startDate ? String(yamlHeader.startDate) : '',
@@ -416,9 +419,9 @@
                     loadCollaborations();
                 });
 
-                // 计算教师列表及各自的统计数据和基于相对量的合作热度
+                // 计算教师列表及统计数据与“相对量热度”
                 const teachersWithStats = computed(() => {
-                    // 1. 先统计每位老师的基础合作数据
+                    // 1. 统计每位老师的基础合作数量
                     const rawList = teachersList.value.map(name => {
                         const teacherCollabs = collaborations.value.filter(c => c.members && c.members.includes(name));
                         const completedCount = teacherCollabs.filter(c => c.status === '已结题').length;
@@ -451,11 +454,11 @@
                             const ratio = t.totalCount / maxTotal;
                             if (ratio >= 0.6) {
                                 heatLabel = "🔥 核心高热";
-                                heatClass = "bg-rose-50 text-rose-700 border border-rose-200 font-medium";
+                                heatClass = "bg-rose-50 text-rose-700 border border-rose-200";
                                 heatIcon = "fa-fire text-rose-500";
                             } else if (ratio >= 0.2) {
                                 heatLabel = "⚡ 活跃合作";
-                                heatClass = "bg-amber-50 text-amber-700 border border-amber-200 font-medium";
+                                heatClass = "bg-amber-50 text-amber-700 border border-amber-200";
                                 heatIcon = "fa-bolt text-amber-500";
                             }
                         }
