@@ -38,7 +38,6 @@
                     <button @click="switchTab('collaborations')" :class="currentTab === 'collaborations' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-diagram-project"></i> 合作研究总览
                     </button>
-                    <!-- 新增标签页 -->
                     <button @click="switchTab('network')" :class="currentTab === 'network' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-nodes"></i> 学术羁绊关系
                     </button>
@@ -190,7 +189,7 @@
                 </div>
 
                 <!-- ================= 视图三：学术羁绊关系 ================= -->
-                <!-- 注意：这里使用 v-if 而不是 v-show，确保容器被创建时就有尺寸 -->
+                <!-- 注意：这里使用 v-if 确保容器被创建时就有尺寸 -->
                 <div v-if="currentTab === 'network'" class="space-y-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
@@ -203,13 +202,13 @@
                             </button>
                         </div>
                     </div>
-                    <!-- ECharts 图表容器，注意这里加了 min-height 确保高度 -->
+                    <!-- ECharts 图表容器 -->
                     <div id="network-chart" class="w-full bg-white rounded-xl shadow-sm border border-slate-200" style="height: 650px; min-height: 650px;"></div>
                 </div>
             </div>
         </main>
 
-        <!-- ================= 弹窗：教师详情与关联课题（保持原样） ================= -->
+        <!-- ================= 弹窗：教师详情与关联课题 ================= -->
         <div v-if="selectedTeacher" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -275,7 +274,7 @@
             </div>
         </div>
 
-        <!-- ================= 弹窗：课题详细信息（保持原样） ================= -->
+        <!-- ================= 弹窗：课题详细信息 ================= -->
         <div v-if="selectedCollab" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -484,20 +483,39 @@
                     const chartDom = document.getElementById('network-chart');
                     if (!chartDom) return;
 
-                    // 加上 try...catch 确保出现错误时控制台有提示
                     try {
-                        // 1. 准备节点数据
-                        const nodes = teachersList.value.map(name => ({
-                            id: name,
-                            name: name,
-                            symbolSize: Math.max(30, teachersWithStats.value.find(t => t.name === name).totalCount * 5 + 20), // 根据合作数量决定大小
-                            category: 0,
-                            label: { show: true, fontSize: 12, fontWeight: 'bold', color: '#1e293b' },
-                            itemStyle: { color: '#6366f1', borderColor: '#c7d2fe', borderWidth: 2 }
-                        }));
+                        // 1. 准备节点数据（加入颜色区分和阴影效果）
+                        const nodes = teachersList.value.map(name => {
+                            const stats = teachersWithStats.value.find(t => t.name === name);
+                            const count = stats ? stats.totalCount : 0;
+                            const isCore = count >= 5;
+                            return {
+                                id: name,
+                                name: name,
+                                symbolSize: Math.max(35, count * 6 + 20),
+                                category: 0,
+                                label: {
+                                    show: true,
+                                    fontSize: 14,
+                                    fontWeight: 'bold',
+                                    color: '#1e293b',
+                                    textBorderColor: '#ffffff',
+                                    textBorderWidth: 3
+                                },
+                                itemStyle: {
+                                    color: isCore ? '#4f46e5' : '#818cf8',
+                                    borderColor: '#ffffff',
+                                    borderWidth: 2,
+                                    shadowColor: 'rgba(0,0,0,0.3)',
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 2,
+                                    shadowOffsetY: 2
+                                }
+                            };
+                        });
 
-                        // 2. 准备边数据（统计共同合作次数）
-                        const linkMap = new Map(); // key: "A-B", value: count
+                        // 2. 准备边数据（加深颜色，加粗线条，优化数字标签）
+                        const linkMap = new Map();
                         collaborations.value.forEach(collab => {
                             const members = collab.members || [];
                             if (members.length < 2) return;
@@ -517,23 +535,30 @@
                                 value: count,
                                 label: {
                                     show: true,
-                                    formatter: '{c}', // 显示连线上权重数字
-                                    fontSize: 10,
-                                    color: '#94a3b8'
+                                    formatter: '{c}',
+                                    fontSize: 13,
+                                    fontWeight: 'bold',
+                                    color: '#475569',
+                                    backgroundColor: '#f8fafc',
+                                    padding: [3, 6],
+                                    borderRadius: 4,
+                                    borderColor: '#cbd5e1',
+                                    borderWidth: 1
                                 },
                                 lineStyle: {
-                                    width: Math.min(6, count + 1), // 连线粗细根据合作次数变化
-                                    color: '#cbd5e1',
+                                    width: Math.min(8, count * 2.5 + 1),
+                                    color: '#94a3b8',
+                                    opacity: 0.7,
                                     curveness: 0.1
                                 }
                             };
                         });
 
-                        // 3. 初始化或更新 ECharts
+                        // 3. 初始化或更新 ECharts（加入高分屏渲染）
                         if (!networkChartInstance) {
-                            networkChartInstance = echarts.init(chartDom);
+                            networkChartInstance = echarts.init(chartDom, null, { devicePixelRatio: window.devicePixelRatio * 2 });
                         } else {
-                            networkChartInstance.resize(); // 关键：如果实例已存在，调整尺寸
+                            networkChartInstance.resize();
                         }
 
                         const option = {
@@ -551,27 +576,30 @@
                                 layout: 'force',
                                 data: nodes,
                                 links: links,
-                                roam: true, 
-                                draggable: true, 
+                                roam: true,
+                                draggable: true,
                                 label: { position: 'inside', formatter: '{b}' },
                                 edgeSymbol: ['circle', 'arrow'],
-                                edgeSymbolSize: [2, 6],
+                                edgeSymbolSize: [3, 8],
                                 force: {
-                                    repulsion: 800, 
-                                    edgeLength: [100, 250], 
-                                    gravity: 0.1
+                                    repulsion: 1500,
+                                    edgeLength: [150, 300],
+                                    gravity: 0.1,
+                                    layoutAnimation: true
                                 },
                                 lineStyle: { color: 'source', curveness: 0.1 },
                                 emphasis: {
-                                    focus: 'adjacency', 
-                                    lineStyle: { width: 5 }
+                                    focus: 'adjacency',
+                                    lineStyle: { width: 6, color: '#4f46e5' },
+                                    label: { fontSize: 16 }
                                 }
                             }]
                         };
+                        
                         networkChartInstance.setOption(option);
 
-                        // 4. 绑定点击事件：点击节点聚焦
-                        networkChartInstance.off('click'); 
+                        // 4. 绑定点击事件
+                        networkChartInstance.off('click');
                         networkChartInstance.on('click', function (params) {
                             if (params.dataType === 'node') {
                                 const clickedNode = params.name;
@@ -581,7 +609,11 @@
 
                                 const newNodes = nodes.filter(n => connectedNodes.has(n.id)).map(n => ({
                                     ...n,
-                                    itemStyle: { color: n.id === clickedNode ? '#ef4444' : '#6366f1' } 
+                                    itemStyle: {
+                                        ...n.itemStyle,
+                                        color: n.id === clickedNode ? '#ef4444' : '#818cf8',
+                                        borderColor: n.id === clickedNode ? '#fca5a5' : '#ffffff'
+                                    }
                                 }));
 
                                 networkChartInstance.setOption({
@@ -601,7 +633,6 @@
                 const switchTab = (tab) => {
                     currentTab.value = tab;
                     if (tab === 'network') {
-                        // 使用 setTimeout 确保 DOM 渲染完成且容器有了真实的宽高
                         nextTick(() => {
                             setTimeout(() => {
                                 initNetworkChart();
@@ -637,7 +668,7 @@
                     getTeacherCollaborations,
                     openTeacherDetail,
                     openCollabDetail,
-                    switchTab,      // 确保返回
+                    switchTab,
                     initNetworkChart,
                     resetNetwork
                 };
