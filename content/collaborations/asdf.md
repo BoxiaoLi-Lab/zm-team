@@ -1,5 +1,5 @@
 ---
-title: 抗静电硅胶
+title: 改性CNC纳晶复合硅胶
 members:
   - 张建明
   - 张晓方
