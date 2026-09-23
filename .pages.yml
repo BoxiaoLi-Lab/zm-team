@@ -1,0 +1,73 @@
+media:
+  input: static/images
+  output: /images
+
+content:
+  - name: collaborations
+    label: "科研合作项目"
+    type: collection
+    path: content/collaborations
+    filename: "{slug}.md"
+    fields:
+      - name: title
+        label: "项目名称"
+        type: string
+
+      - name: members
+        label: "合作团队成员"
+        type: select
+        options:
+          multiple: true
+          values:
+            - "陈玉伟"
+            - "段咏欣"
+            - "蒋敏"
+            - "李柏霄"
+            - "李明杰"
+            - "刘云霄"
+            - "孙依晗"
+            - "王纲"
+            - "王杰"
+            - "王淑雪"
+            - "乌皓"
+            - "杨洪生"
+            - "袁媛"
+            - "张建明"
+            - "张晓方"
+            - "张泽军"
+            - "周立娟"
+            - "周丽娟"
+            - "宗鲁"
+
+      - name: status
+        label: "合作状态"
+        type: select
+        options:
+          values:
+            - "已完成合作"
+            - "进行中合作"
+
+      - name: student
+        label: "参与学生"
+        type: string
+        required: false
+
+      - name: startDate
+        label: "开始年份"
+        type: string
+        required: false
+
+      - name: endDate
+        label: "结束年份"
+        type: string
+        required: false
+
+      - name: contribution
+        label: "分工情况"
+        type: string
+        required: false
+
+      - name: result
+        label: "成果期刊/项目"
+        type: string
+        required: false
