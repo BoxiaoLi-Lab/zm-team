@@ -21,7 +21,7 @@
         <!-- 顶部导航栏 -->
         <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center space-x-3 cursor-pointer" @click="currentTab = 'teachers'">
+                <div class="flex items-center space-x-3 cursor-pointer" @click="switchTab('teachers')">
                     <div class="bg-indigo-700 p-2 rounded-lg text-indigo-200">
                         <i class="fa-solid fa-network-wired text-xl"></i>
                     </div>
@@ -32,14 +32,14 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
-                    <button @click="currentTab = 'teachers'" :class="currentTab === 'teachers' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
+                    <button @click="switchTab('teachers')" :class="currentTab === 'teachers' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-users-rectangle"></i> 教师信息总览
                     </button>
-                    <button @click="currentTab = 'collaborations'" :class="currentTab === 'collaborations' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
+                    <button @click="switchTab('collaborations')" :class="currentTab === 'collaborations' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-diagram-project"></i> 合作研究总览
                     </button>
                     <!-- 新增标签页 -->
-                    <button @click="currentTab = 'network'" :class="currentTab === 'network' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
+                    <button @click="switchTab('network')" :class="currentTab === 'network' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-nodes"></i> 学术羁绊关系
                     </button>
                     <a href="https://app.pagescms.org/boxiaoli-lab/zm-team/main/collection/collaborations" target="_blank" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-md shadow-sm transition flex items-center gap-1.5">
@@ -61,7 +61,6 @@
             <div v-else>
                 <!-- ================= 视图一：教师信息总览 ================= -->
                 <div v-show="currentTab === 'teachers'" class="space-y-6">
-                    <!-- ... 保持原样 ... -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div class="relative flex-1 max-w-md">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -95,7 +94,6 @@
                                         {{ teacher.heatLabel }}
                                     </span>
                                 </div>
-
                                 <div class="grid grid-cols-2 gap-3 my-4 py-3 border-y border-slate-100 bg-slate-50/50 rounded-lg px-3">
                                     <div class="text-center">
                                         <span class="block text-xs text-slate-400 font-medium mb-1">已完成合作</span>
@@ -107,7 +105,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="flex items-center justify-between text-xs pt-1">
                                 <span class="text-slate-500">参与课题总计: <strong class="text-slate-800">{{ teacher.totalCount }}</strong> 项</span>
                                 <span class="text-indigo-600 font-semibold group-hover:translate-x-1 transition flex items-center gap-1">
@@ -120,7 +117,6 @@
 
                 <!-- ================= 视图二：合作研究总览 ================= -->
                 <div v-show="currentTab === 'collaborations'" class="space-y-6">
-                    <!-- ... 保持原样 ... -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div class="relative flex-1 max-w-md">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -194,7 +190,8 @@
                 </div>
 
                 <!-- ================= 视图三：学术羁绊关系 ================= -->
-                <div v-show="currentTab === 'network'" class="space-y-6">
+                <!-- 注意：这里使用 v-if 而不是 v-show，确保容器被创建时就有尺寸 -->
+                <div v-if="currentTab === 'network'" class="space-y-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h2 class="text-lg font-bold text-slate-800">学术羁绊网络图</h2>
@@ -206,10 +203,9 @@
                             </button>
                         </div>
                     </div>
-                    <!-- ECharts 图表容器 -->
-                    <div id="network-chart" class="w-full bg-white rounded-xl shadow-sm border border-slate-200" style="height: 650px;"></div>
+                    <!-- ECharts 图表容器，注意这里加了 min-height 确保高度 -->
+                    <div id="network-chart" class="w-full bg-white rounded-xl shadow-sm border border-slate-200" style="height: 650px; min-height: 650px;"></div>
                 </div>
-
             </div>
         </main>
 
@@ -394,10 +390,6 @@
                         collaborations.value = [];
                     } finally {
                         loading.value = false;
-                        // 数据加载完成后，如果当前在关系图tab，则初始化图表
-                        if (currentTab.value === 'network') {
-                            nextTick(() => initNetworkChart());
-                        }
                     }
                 };
 
@@ -492,127 +484,143 @@
                     const chartDom = document.getElementById('network-chart');
                     if (!chartDom) return;
 
-                    // 1. 准备节点数据
-                    const nodes = teachersList.value.map(name => ({
-                        id: name,
-                        name: name,
-                        symbolSize: Math.max(30, teachersWithStats.value.find(t => t.name === name).totalCount * 5 + 20), // 根据合作数量决定大小
-                        category: 0,
-                        label: { show: true, fontSize: 12, fontWeight: 'bold', color: '#1e293b' },
-                        itemStyle: { color: '#6366f1', borderColor: '#c7d2fe', borderWidth: 2 }
-                    }));
+                    // 加上 try...catch 确保出现错误时控制台有提示
+                    try {
+                        // 1. 准备节点数据
+                        const nodes = teachersList.value.map(name => ({
+                            id: name,
+                            name: name,
+                            symbolSize: Math.max(30, teachersWithStats.value.find(t => t.name === name).totalCount * 5 + 20), // 根据合作数量决定大小
+                            category: 0,
+                            label: { show: true, fontSize: 12, fontWeight: 'bold', color: '#1e293b' },
+                            itemStyle: { color: '#6366f1', borderColor: '#c7d2fe', borderWidth: 2 }
+                        }));
 
-                    // 2. 准备边数据（统计共同合作次数）
-                    const linkMap = new Map(); // key: "A-B", value: count
-                    collaborations.value.forEach(collab => {
-                        const members = collab.members || [];
-                        if (members.length < 2) return;
-                        // 生成两两组合
-                        for (let i = 0; i < members.length; i++) {
-                            for (let j = i + 1; j < members.length; j++) {
-                                // 排序保证 A-B 和 B-A 是同一个 key
-                                const pair = [members[i], members[j]].sort().join('-');
-                                linkMap.set(pair, (linkMap.get(pair) || 0) + 1);
-                            }
-                        }
-                    });
-
-                    const links = Array.from(linkMap.entries()).map(([pair, count]) => {
-                        const [source, target] = pair.split('-');
-                        return {
-                            source: source,
-                            target: target,
-                            value: count,
-                            label: {
-                                show: true,
-                                formatter: '{c}', // 显示连线上权重数字
-                                fontSize: 10,
-                                color: '#94a3b8'
-                            },
-                            lineStyle: {
-                                width: Math.min(6, count + 1), // 连线粗细根据合作次数变化
-                                color: '#cbd5e1',
-                                curveness: 0.1
-                            }
-                        };
-                    });
-
-                    // 3. 初始化或更新 ECharts
-                    if (!networkChartInstance) {
-                        networkChartInstance = echarts.init(chartDom);
-                    }
-
-                    const option = {
-                        tooltip: {
-                            trigger: 'item',
-                            formatter: function (params) {
-                                if (params.dataType === 'edge') {
-                                    return `合作课题数: ${params.data.value}`;
+                        // 2. 准备边数据（统计共同合作次数）
+                        const linkMap = new Map(); // key: "A-B", value: count
+                        collaborations.value.forEach(collab => {
+                            const members = collab.members || [];
+                            if (members.length < 2) return;
+                            for (let i = 0; i < members.length; i++) {
+                                for (let j = i + 1; j < members.length; j++) {
+                                    const pair = [members[i], members[j]].sort().join('-');
+                                    linkMap.set(pair, (linkMap.get(pair) || 0) + 1);
                                 }
-                                return `教师: ${params.name}`;
                             }
-                        },
-                        series: [{
-                            type: 'graph',
-                            layout: 'force',
-                            data: nodes,
-                            links: links,
-                            roam: true, // 允许缩放和平移
-                            draggable: true, // 允许拖拽节点
-                            label: { position: 'inside', formatter: '{b}' },
-                            edgeSymbol: ['circle', 'arrow'],
-                            edgeSymbolSize: [2, 6],
-                            force: {
-                                repulsion: 800, // 斥力，防止节点重叠太厉害
-                                edgeLength: [100, 250], // 边长范围
-                                gravity: 0.1
-                            },
-                            lineStyle: { color: 'source', curveness: 0.1 },
-                            emphasis: {
-                                focus: 'adjacency', // 高亮相邻节点
-                                lineStyle: { width: 5 }
-                            }
-                        }]
-                    };
-                    networkChartInstance.setOption(option);
+                        });
 
-                    // 4. 绑定点击事件：点击节点聚焦
-                    networkChartInstance.off('click'); // 防止重复绑定
-                    networkChartInstance.on('click', function (params) {
-                        if (params.dataType === 'node') {
-                            const clickedNode = params.name;
-                            // 过滤出只跟点击节点有关的边和节点
-                            const filteredLinks = links.filter(l => l.source === clickedNode || l.target === clickedNode);
-                            const connectedNodes = new Set([clickedNode]);
-                            filteredLinks.forEach(l => { connectedNodes.add(l.source); connectedNodes.add(l.target); });
+                        const links = Array.from(linkMap.entries()).map(([pair, count]) => {
+                            const [source, target] = pair.split('-');
+                            return {
+                                source: source,
+                                target: target,
+                                value: count,
+                                label: {
+                                    show: true,
+                                    formatter: '{c}', // 显示连线上权重数字
+                                    fontSize: 10,
+                                    color: '#94a3b8'
+                                },
+                                lineStyle: {
+                                    width: Math.min(6, count + 1), // 连线粗细根据合作次数变化
+                                    color: '#cbd5e1',
+                                    curveness: 0.1
+                                }
+                            };
+                        });
 
-                            const newNodes = nodes.filter(n => connectedNodes.has(n.id)).map(n => ({
-                                ...n,
-                                itemStyle: { color: n.id === clickedNode ? '#ef4444' : '#6366f1' } // 中心节点变红
-                            }));
-
-                            networkChartInstance.setOption({
-                                series: [{
-                                    data: newNodes,
-                                    links: filteredLinks
-                                }]
-                            });
+                        // 3. 初始化或更新 ECharts
+                        if (!networkChartInstance) {
+                            networkChartInstance = echarts.init(chartDom);
+                        } else {
+                            networkChartInstance.resize(); // 关键：如果实例已存在，调整尺寸
                         }
-                    });
+
+                        const option = {
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: function (params) {
+                                    if (params.dataType === 'edge') {
+                                        return `合作课题数: ${params.data.value}`;
+                                    }
+                                    return `教师: ${params.name}`;
+                                }
+                            },
+                            series: [{
+                                type: 'graph',
+                                layout: 'force',
+                                data: nodes,
+                                links: links,
+                                roam: true, 
+                                draggable: true, 
+                                label: { position: 'inside', formatter: '{b}' },
+                                edgeSymbol: ['circle', 'arrow'],
+                                edgeSymbolSize: [2, 6],
+                                force: {
+                                    repulsion: 800, 
+                                    edgeLength: [100, 250], 
+                                    gravity: 0.1
+                                },
+                                lineStyle: { color: 'source', curveness: 0.1 },
+                                emphasis: {
+                                    focus: 'adjacency', 
+                                    lineStyle: { width: 5 }
+                                }
+                            }]
+                        };
+                        networkChartInstance.setOption(option);
+
+                        // 4. 绑定点击事件：点击节点聚焦
+                        networkChartInstance.off('click'); 
+                        networkChartInstance.on('click', function (params) {
+                            if (params.dataType === 'node') {
+                                const clickedNode = params.name;
+                                const filteredLinks = links.filter(l => l.source === clickedNode || l.target === clickedNode);
+                                const connectedNodes = new Set([clickedNode]);
+                                filteredLinks.forEach(l => { connectedNodes.add(l.source); connectedNodes.add(l.target); });
+
+                                const newNodes = nodes.filter(n => connectedNodes.has(n.id)).map(n => ({
+                                    ...n,
+                                    itemStyle: { color: n.id === clickedNode ? '#ef4444' : '#6366f1' } 
+                                }));
+
+                                networkChartInstance.setOption({
+                                    series: [{
+                                        data: newNodes,
+                                        links: filteredLinks
+                                    }]
+                                });
+                            }
+                        });
+                    } catch (err) {
+                        console.error('初始化关系图失败:', err);
+                    }
                 };
 
-                // 重置图谱
+                // 核心修复：切换标签页时的处理
+                const switchTab = (tab) => {
+                    currentTab.value = tab;
+                    if (tab === 'network') {
+                        // 使用 setTimeout 确保 DOM 渲染完成且容器有了真实的宽高
+                        nextTick(() => {
+                            setTimeout(() => {
+                                initNetworkChart();
+                            }, 100);
+                        });
+                    }
+                };
+
                 const resetNetwork = () => {
                     if (networkChartInstance) {
                         networkChartInstance.dispose();
                         networkChartInstance = null;
-                        nextTick(() => initNetworkChart());
+                        nextTick(() => {
+                            setTimeout(() => {
+                                initNetworkChart();
+                            }, 100);
+                        });
                     }
                 };
-
-                // 监听 Tab 切换，当切到网络图时初始化
-                // 在 Vue 中，普通的 ref 改变不会自动触发 nextTick 之外的重绘，我们用 watch 或者直接在按钮上处理
-                // 这里简单处理，通过点击 Tab 按钮时去触发初始化
 
                 return {
                     currentTab,
@@ -629,6 +637,7 @@
                     getTeacherCollaborations,
                     openTeacherDetail,
                     openCollabDetail,
+                    switchTab,      // 确保返回
                     initNetworkChart,
                     resetNetwork
                 };
