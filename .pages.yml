@@ -12,6 +12,7 @@ content:
       - name: title
         label: "项目名称"
         type: string
+        description: "请输入科研项目的完整名称"
 
       - name: members
         label: "合作团队成员"
@@ -38,36 +39,43 @@ content:
             - "周立娟"
             - "周丽娟"
             - "宗鲁"
+        description: "可多选，请选择参与该项目的所有教师"
 
       - name: status
         label: "合作状态"
         type: select
         options:
           values:
-            - "已完成合作"
-            - "进行中合作"
+            - "在研中"
+            - "已结题"
+        description: "请选择统一的标准状态（必须选这两项，前端网页才能正确显示颜色和统计）"
 
       - name: student
         label: "参与学生"
         type: string
         required: false
+        description: "例如：张立颖（可留空）"
 
       - name: startDate
         label: "开始年份"
         type: string
         required: false
+        description: "例如：2024（可留空）"
 
       - name: endDate
         label: "结束年份"
         type: string
         required: false
+        description: "例如：2026；如果还在进行中，可以留空（可留空）"
 
       - name: contribution
         label: "分工情况"
         type: string
         required: false
+        description: "例如：平均分工、共同指导（可留空）"
 
       - name: result
         label: "成果期刊/项目"
         type: string
         required: false
+        description: "例如：实验中、投稿中、Advanced Materials（可留空）"
