@@ -7,7 +7,7 @@ content:
     label: "科研合作项目"
     type: collection
     path: content/collaborations
-    filename: "{fields.title}.md"
+    filename: "{title}.md"
     fields:
       - name: title
         label: "项目名称"
