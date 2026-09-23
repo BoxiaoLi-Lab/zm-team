@@ -2,6 +2,8 @@ backend:
   name: github
   repo: Boxiaoli-Lab/zm-team
   branch: main
+  base_url: https://sveltia-cms-auth.liboxiao19890504.workers.dev # 指向您在 Cloudflare 上的认证服务
+  auth_endpoint: auth
 
 media_folder: "static/images"
 public_folder: "/images"
@@ -20,10 +22,14 @@ collections:
         multiple: true
         options:
           - "陈玉伟"
+          - "段咏欣"
           - "张晓方"
-          - "薛敏"
+          - "张晓方"
+          - "张晓方"
+          - "张晓方"
+          - "张晓方"
           - "李柏霄"
           - "李明杰"
-          - "刘云青"
-          - "孙依晓"
-          - "王翔"
+          
+         
+         
