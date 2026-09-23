@@ -1,5 +1,5 @@
 ---
-title: 水塑支架
+title: 水塑医用甲板
 members:
   - 李明杰
   - 刘云霄
