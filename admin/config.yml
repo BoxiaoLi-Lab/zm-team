@@ -40,3 +40,14 @@ collections:
           - "周立娟"
           - "周丽娟"
           - "宗鲁"
+      - label: "合作状态"
+        name: "status"
+        widget: "select"
+        options:
+          - "已完成合作"
+          - "进行中合作"
+      - {label: "参与学生", name: "student", widget: "string", required: false}
+      - {label: "开始年份", name: "startDate", widget: "string", required: false}
+      - {label: "结束年份", name: "endDate", widget: "string", required: false}
+      - {label: "分工情况", name: "contribution", widget: "string", required: false}
+      - {label: "成果期刊/项目", name: "result", widget: "string", required: false}
