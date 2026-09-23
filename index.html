@@ -36,7 +36,8 @@
                     <button @click="currentTab = 'collaborations'" :class="currentTab === 'collaborations' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-diagram-project"></i> 合作研究总览
                     </button>
-                    <a href="https://cozy-meerkat-5ff990.netlify.app/admin/" target="_blank" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-md shadow-sm transition flex items-center gap-1.5">
+                    <!-- 修复：更新为 Pages CMS 后台入口 -->
+                    <a href="https://app.pagescms.org/boxiaoli-lab/zm-team/main/collection/collaborations" target="_blank" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-md shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-sliders"></i> 管理后台
                     </a>
                 </div>
@@ -388,14 +389,14 @@
                     }
                 };
 
-                // YAML Frontmatter 解析器（内置历史错别字自动容错映射）
+                // YAML Frontmatter 解析器（内置历史错别字自动容错映射 & 状态标准化）
                 const parseFrontmatter = (content) => {
                     const match = content.match(/^---\s*([\s\S]*?)\s*---([\s\S]*)$/);
                     if (!match) return null;
                     try {
                         const yamlHeader = jsyaml.load(match[1]);
                         
-                        // 自动将历史数据中的“段泳欣”、“张晓芳”规范修正为“段咏欣”、“张晓方”
+                        // 1. 自动将历史数据中的“段泳欣”、“张晓芳”规范修正为“段咏欣”、“张晓方”
                         let rawMembers = yamlHeader.members || [];
                         let fixedMembers = rawMembers.map(m => {
                             if (m === '段泳欣') return '段咏欣';
@@ -403,10 +404,22 @@
                             return m;
                         });
 
+                        // 2. 状态字段的智能识别（兼容 Pages CMS 的“进行中合作/已完成合作”与旧数据的“在研中/已结题”）
+                        let rawStatus = yamlHeader.status || '在研中';
+                        let standardizedStatus = '在研中'; // 默认值
+                        if (rawStatus === '已完成合作' || rawStatus === '已结题') {
+                            standardizedStatus = '已结题';
+                        } else if (rawStatus === '进行中合作' || rawStatus === '在研中') {
+                            standardizedStatus = '在研中';
+                        } else {
+                            // 如果识别不出来，保留原文，防止丢数据
+                            standardizedStatus = rawStatus;
+                        }
+
                         return {
                             title: yamlHeader.title || '未命名课题',
                             members: fixedMembers,
-                            status: yamlHeader.status || '在研中',
+                            status: standardizedStatus, // 使用标准化后的状态
                             student: yamlHeader.student || '',
                             startDate: yamlHeader.startDate ? String(yamlHeader.startDate) : '',
                             endDate: yamlHeader.endDate ? String(yamlHeader.endDate) : '',
