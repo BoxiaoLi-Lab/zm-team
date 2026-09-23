@@ -189,12 +189,11 @@
                 </div>
 
                 <!-- ================= 视图三：学术羁绊关系 ================= -->
-                <!-- 注意：这里使用 v-if 确保容器被创建时就有尺寸 -->
                 <div v-if="currentTab === 'network'" class="space-y-6">
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h2 class="text-lg font-bold text-slate-800">学术羁绊网络图</h2>
-                            <p class="text-sm text-slate-500 mt-1">点击圆圈（老师）可聚焦查看其个人合作网络；连线上的数字表示共同合作过的课题数量。</p>
+                            <p class="text-sm text-slate-500 mt-1">点击圆圈（老师）可聚焦查看其个人合作网络；点击连线上的数字可查看两人的具体合作课题。</p>
                         </div>
                         <div class="flex items-center space-x-3">
                             <button @click="resetNetwork" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition">
@@ -330,6 +329,59 @@
             </div>
         </div>
 
+        <!-- ================= 弹窗：连线详情（两人合作课题） ================= -->
+        <div v-if="selectedEdge" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">
+                                {{ selectedEdge.source }} <span class="text-slate-400 font-normal mx-1">&</span> {{ selectedEdge.target }}
+                            </h2>
+                            <p class="text-xs text-slate-500">双方共同合作的科研项目</p>
+                        </div>
+                    </div>
+                    <button @click="selectedEdge = null" class="w-8 h-8 rounded-full bg-slate-200/60 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto space-y-6 flex-grow">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">共同合作课题 ({{ selectedEdge.collabs.length }} 项)</h3>
+                        <div class="space-y-3">
+                            <div v-for="collab in selectedEdge.collabs" :key="collab.title" class="p-4 rounded-xl border border-slate-200 bg-white hover:border-emerald-300 transition shadow-sm space-y-2">
+                                <div class="flex items-start justify-between">
+                                    <h4 class="font-bold text-slate-900 text-base">{{ collab.title }}</h4>
+                                    <span :class="collab.status === '在研中' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'" class="px-2.5 py-0.5 rounded-full text-xs font-medium border inline-flex items-center gap-1 shrink-0">
+                                        <span :class="collab.status === '在研中' ? 'bg-amber-500' : 'bg-emerald-500'" class="w-1.5 h-1.5 rounded-full"></span>
+                                        {{ collab.status }}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+                                    <span><i class="fa-solid fa-user-group mr-1 text-slate-400"></i>全部成员: {{ collab.members.join(', ') }}</span>
+                                    <span><i class="fa-regular fa-calendar mr-1 text-slate-400"></i>{{ collab.startDate || '长期' }} ~ {{ collab.endDate || '至今' }}</span>
+                                </div>
+                                <div v-if="collab.contribution" class="text-xs bg-slate-50 p-2.5 rounded-lg text-slate-600 border border-slate-100 mt-2">
+                                    <strong class="text-slate-700">分工与贡献：</strong>{{ collab.contribution }}
+                                </div>
+                                <div v-if="collab.result" class="text-xs bg-indigo-50/50 p-2.5 rounded-lg text-indigo-900 border border-indigo-100/60 mt-1">
+                                    <strong class="text-indigo-950">预期/实际成果：</strong>{{ collab.result }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+                    <button @click="selectedEdge = null" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
             <p>ZM Research Team &copy; 2026. All Rights Reserved.</p>
         </footer>
@@ -356,6 +408,7 @@
                 
                 const selectedTeacher = ref(null);
                 const selectedCollab = ref(null);
+                const selectedEdge = ref(null); // 新增：用于存储点击连线后的数据
 
                 // ECharts 实例变量
                 let networkChartInstance = null;
@@ -554,7 +607,7 @@
                             };
                         });
 
-                        // 3. 初始化或更新 ECharts（加入高分屏渲染）
+                        // 3. 初始化或更新 ECharts
                         if (!networkChartInstance) {
                             networkChartInstance = echarts.init(chartDom, null, { devicePixelRatio: window.devicePixelRatio * 2 });
                         } else {
@@ -566,7 +619,7 @@
                                 trigger: 'item',
                                 formatter: function (params) {
                                     if (params.dataType === 'edge') {
-                                        return `合作课题数: ${params.data.value}`;
+                                        return `合作课题数: ${params.data.value} <br/> <span style="font-size:12px;color:#666">点击查看详情</span>`;
                                     }
                                     return `教师: ${params.name}`;
                                 }
@@ -598,9 +651,10 @@
                         
                         networkChartInstance.setOption(option);
 
-                        // 4. 绑定点击事件
+                        // 4. 绑定点击事件（完善 click 逻辑）
                         networkChartInstance.off('click');
                         networkChartInstance.on('click', function (params) {
+                            // 情况一：点击了节点（老师圆圈）—— 聚焦视图
                             if (params.dataType === 'node') {
                                 const clickedNode = params.name;
                                 const filteredLinks = links.filter(l => l.source === clickedNode || l.target === clickedNode);
@@ -622,6 +676,21 @@
                                         links: filteredLinks
                                     }]
                                 });
+                            }
+                            // 情况二：点击了边（连线或数字）—— 弹出合作详情弹窗
+                            else if (params.dataType === 'edge') {
+                                const source = params.data.source;
+                                const target = params.data.target;
+                                // 过滤出同时包含这两位老师的课题
+                                const sharedCollabs = collaborations.value.filter(c => 
+                                    c.members && c.members.includes(source) && c.members.includes(target)
+                                );
+                                // 存储数据以触发弹窗
+                                selectedEdge.value = {
+                                    source: source,
+                                    target: target,
+                                    collabs: sharedCollabs
+                                };
                             }
                         });
                     } catch (err) {
@@ -665,6 +734,7 @@
                     totalOngoingCollaborations,
                     selectedTeacher,
                     selectedCollab,
+                    selectedEdge, // 导出
                     getTeacherCollaborations,
                     openTeacherDetail,
                     openCollabDetail,
