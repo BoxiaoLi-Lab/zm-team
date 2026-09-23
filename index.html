@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- js-yaml 用于解析 Markdown frontmatter -->
+    <!-- js-yaml用于解析 Markdown frontmatter -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
@@ -84,7 +84,7 @@
                                             <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded">ZM Research Faculty</span>
                                         </div>
                                     </div>
-                                    <!-- 相对量动态合作热度标签 -->
+                                    <!-- 基于相对量动态评定的合作热度标签 -->
                                     <span :class="teacher.heatClass" class="px-2.5 py-1 text-xs rounded-md inline-flex items-center gap-1 shadow-2xs font-medium">
                                         <i :class="teacher.heatIcon" class="text-[10px]"></i>
                                         {{ teacher.heatLabel }}
@@ -388,36 +388,36 @@
                     }
                 };
 
-                // 简单的 YAML Frontmatter 解析器（带容错纠错）
+                // YAML Frontmatter 解析器（内置历史错别字自动容错映射）
                 const parseFrontmatter = (content) => {
-    const match = content.match(/^---\s*([\s\S]*?)\s*---([\s\S]*)$/);
-    if (!match) return null;
-    try {
-        const yamlHeader = jsyaml.load(match[1]);
-        
-        // 自动将历史数据中的错别字规范化
-        let rawMembers = yamlHeader.members || [];
-        let fixedMembers = rawMembers.map(m => {
-            if (m === '段泳欣') return '段咏欣';
-            if (m === '张晓芳') return '张晓方';
-            return m;
-        });
+                    const match = content.match(/^---\s*([\s\S]*?)\s*---([\s\S]*)$/);
+                    if (!match) return null;
+                    try {
+                        const yamlHeader = jsyaml.load(match[1]);
+                        
+                        // 自动将历史数据中的“段泳欣”、“张晓芳”规范修正为“段咏欣”、“张晓方”
+                        let rawMembers = yamlHeader.members || [];
+                        let fixedMembers = rawMembers.map(m => {
+                            if (m === '段泳欣') return '段咏欣';
+                            if (m === '张晓芳') return '张晓方';
+                            return m;
+                        });
 
-        return {
-            title: yamlHeader.title || '未命名课题',
-            members: fixedMembers,
-            status: yamlHeader.status || '在研中',
-            student: yamlHeader.student || '',
-            startDate: yamlHeader.startDate ? String(yamlHeader.startDate) : '',
-            endDate: yamlHeader.endDate ? String(yamlHeader.endDate) : '',
-            contribution: yamlHeader.contribution || '',
-            result: yamlHeader.result || ''
-        };
-    } catch (e) {
-        console.error('解析 Frontmatter 出错', e);
-        return null;
-    }
-};
+                        return {
+                            title: yamlHeader.title || '未命名课题',
+                            members: fixedMembers,
+                            status: yamlHeader.status || '在研中',
+                            student: yamlHeader.student || '',
+                            startDate: yamlHeader.startDate ? String(yamlHeader.startDate) : '',
+                            endDate: yamlHeader.endDate ? String(yamlHeader.endDate) : '',
+                            contribution: yamlHeader.contribution || '',
+                            result: yamlHeader.result || ''
+                        };
+                    } catch (e) {
+                        console.error('解析 Frontmatter 出错', e);
+                        return null;
+                    }
+                };
 
                 onMounted(() => {
                     loadCollaborations();
