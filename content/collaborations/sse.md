@@ -1,5 +1,5 @@
 ---
-title: SSE固态电解质
+title: 固态电解质
 members:
   - 李明杰
   - 张建明
