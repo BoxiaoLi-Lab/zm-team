@@ -4,7 +4,7 @@ members:
   - 段咏欣
   - 刘云霄
   - 王杰
-status: 进行中合作
+status: 在研中
 student: 高一帆
 startDate: "2025"
 contribution: 平均分工
