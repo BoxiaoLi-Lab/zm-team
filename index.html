@@ -12,6 +12,8 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- js-yaml用于解析 Markdown frontmatter -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <!-- ECharts 关系图绘制库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
@@ -36,7 +38,10 @@
                     <button @click="currentTab = 'collaborations'" :class="currentTab === 'collaborations' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
                         <i class="fa-solid fa-diagram-project"></i> 合作研究总览
                     </button>
-                    <!-- 修复：更新为 Pages CMS 后台入口 -->
+                    <!-- 新增标签页 -->
+                    <button @click="currentTab = 'network'" :class="currentTab === 'network' ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-200 hover:bg-indigo-800/60 hover:text-white'" class="px-3.5 py-1.5 text-xs font-semibold rounded-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-nodes"></i> 学术羁绊关系
+                    </button>
                     <a href="https://app.pagescms.org/boxiaoli-lab/zm-team/main/collection/collaborations" target="_blank" class="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold rounded-md shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-sliders"></i> 管理后台
                     </a>
@@ -56,7 +61,7 @@
             <div v-else>
                 <!-- ================= 视图一：教师信息总览 ================= -->
                 <div v-show="currentTab === 'teachers'" class="space-y-6">
-                    <!-- 筛选与统计头部 -->
+                    <!-- ... 保持原样 ... -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div class="relative flex-1 max-w-md">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -85,7 +90,6 @@
                                             <span class="inline-block mt-0.5 px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded">ZM Research Faculty</span>
                                         </div>
                                     </div>
-                                    <!-- 基于相对量动态评定的合作热度标签 -->
                                     <span :class="teacher.heatClass" class="px-2.5 py-1 text-xs rounded-md inline-flex items-center gap-1 shadow-2xs font-medium">
                                         <i :class="teacher.heatIcon" class="text-[10px]"></i>
                                         {{ teacher.heatLabel }}
@@ -116,6 +120,7 @@
 
                 <!-- ================= 视图二：合作研究总览 ================= -->
                 <div v-show="currentTab === 'collaborations'" class="space-y-6">
+                    <!-- ... 保持原样 ... -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div class="relative flex-1 max-w-md">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -187,13 +192,30 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ================= 视图三：学术羁绊关系 ================= -->
+                <div v-show="currentTab === 'network'" class="space-y-6">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">学术羁绊网络图</h2>
+                            <p class="text-sm text-slate-500 mt-1">点击圆圈（老师）可聚焦查看其个人合作网络；连线上的数字表示共同合作过的课题数量。</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button @click="resetNetwork" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition">
+                                <i class="fa-solid fa-rotate-right mr-1"></i> 重置全景视图
+                            </button>
+                        </div>
+                    </div>
+                    <!-- ECharts 图表容器 -->
+                    <div id="network-chart" class="w-full bg-white rounded-xl shadow-sm border border-slate-200" style="height: 650px;"></div>
+                </div>
+
             </div>
         </main>
 
-        <!-- ================= 弹窗：教师详情与关联课题 ================= -->
+        <!-- ================= 弹窗：教师详情与关联课题（保持原样） ================= -->
         <div v-if="selectedTeacher" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-                <!-- 弹窗头部 -->
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">
@@ -208,10 +230,7 @@
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-
-                <!-- 弹窗主体内容 -->
                 <div class="p-6 overflow-y-auto space-y-6 flex-grow">
-                    <!-- 统计摘要 -->
                     <div class="grid grid-cols-3 gap-4">
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
                             <span class="block text-xs text-slate-500 font-medium">总参与课题</span>
@@ -226,8 +245,6 @@
                             <span class="text-2xl font-bold text-emerald-600 mt-1 block">{{ selectedTeacher.completedCount }}</span>
                         </div>
                     </div>
-
-                    <!-- 关联课题列表 -->
                     <div>
                         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">参与的科研合作项目列表</h3>
                         <div class="space-y-3">
@@ -254,8 +271,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 弹窗底部 -->
                 <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
                     <button @click="selectedTeacher = null" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">
                         关闭
@@ -264,7 +279,7 @@
             </div>
         </div>
 
-        <!-- ================= 弹窗：课题详细信息 ================= -->
+        <!-- ================= 弹窗：课题详细信息（保持原样） ================= -->
         <div v-if="selectedCollab" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -273,13 +288,11 @@
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-
                 <div class="p-6 overflow-y-auto space-y-4 flex-grow text-sm">
                     <div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">课题名称</span>
                         <h3 class="text-xl font-bold text-slate-900">{{ selectedCollab.title }}</h3>
                     </div>
-
                     <div class="grid grid-cols-2 gap-4 pt-2">
                         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                             <span class="text-xs text-slate-400 block mb-1">合作状态</span>
@@ -293,7 +306,6 @@
                             <span class="font-semibold text-slate-800">{{ selectedCollab.student || '未指定' }}</span>
                         </div>
                     </div>
-
                     <div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">合作教师成员</span>
                         <div class="flex flex-wrap gap-1.5">
@@ -302,23 +314,19 @@
                             </span>
                         </div>
                     </div>
-
                     <div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">起止时间</span>
                         <p class="text-slate-700">{{ selectedCollab.startDate || '长期' }} ~ {{ selectedCollab.endDate || '至今' }}</p>
                     </div>
-
                     <div v-if="selectedCollab.contribution">
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">合作分工与贡献</span>
                         <p class="text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">{{ selectedCollab.contribution }}</p>
                     </div>
-
                     <div v-if="selectedCollab.result">
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">合作预期/实际成果</span>
                         <p class="text-slate-800 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 leading-relaxed">{{ selectedCollab.result }}</p>
                     </div>
                 </div>
-
                 <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
                     <button @click="selectedCollab = null" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">
                         关闭
@@ -327,7 +335,6 @@
             </div>
         </div>
 
-        <!-- 页脚 -->
         <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-auto">
             <p>ZM Research Team &copy; 2026. All Rights Reserved.</p>
         </footer>
@@ -335,7 +342,7 @@
 
     <!-- Vue 业务逻辑脚本 -->
     <script>
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -355,13 +362,14 @@
                 const selectedTeacher = ref(null);
                 const selectedCollab = ref(null);
 
-                // 获取简写的名字或姓氏首字母用作头像
+                // ECharts 实例变量
+                let networkChartInstance = null;
+
                 const getShortName = (name) => {
                     if (!name) return '';
                     return name.length > 2 ? name.slice(-2) : name;
                 };
 
-                // 加载 content/collaborations 目录下的 Markdown 文件
                 const loadCollaborations = async () => {
                     try {
                         const res = await fetch('https://api.github.com/repos/Boxiaoli-Lab/zm-team/contents/content/collaborations');
@@ -386,17 +394,18 @@
                         collaborations.value = [];
                     } finally {
                         loading.value = false;
+                        // 数据加载完成后，如果当前在关系图tab，则初始化图表
+                        if (currentTab.value === 'network') {
+                            nextTick(() => initNetworkChart());
+                        }
                     }
                 };
 
-                // YAML Frontmatter 解析器（内置历史错别字自动容错映射 & 状态标准化）
                 const parseFrontmatter = (content) => {
                     const match = content.match(/^---\s*([\s\S]*?)\s*---([\s\S]*)$/);
                     if (!match) return null;
                     try {
                         const yamlHeader = jsyaml.load(match[1]);
-                        
-                        // 1. 自动将历史数据中的“段泳欣”、“张晓芳”规范修正为“段咏欣”、“张晓方”
                         let rawMembers = yamlHeader.members || [];
                         let fixedMembers = rawMembers.map(m => {
                             if (m === '段泳欣') return '段咏欣';
@@ -404,22 +413,20 @@
                             return m;
                         });
 
-                        // 2. 状态字段的智能识别（兼容 Pages CMS 的“进行中合作/已完成合作”与旧数据的“在研中/已结题”）
                         let rawStatus = yamlHeader.status || '在研中';
-                        let standardizedStatus = '在研中'; // 默认值
+                        let standardizedStatus = '在研中';
                         if (rawStatus === '已完成合作' || rawStatus === '已结题') {
                             standardizedStatus = '已结题';
                         } else if (rawStatus === '进行中合作' || rawStatus === '在研中') {
                             standardizedStatus = '在研中';
                         } else {
-                            // 如果识别不出来，保留原文，防止丢数据
                             standardizedStatus = rawStatus;
                         }
 
                         return {
                             title: yamlHeader.title || '未命名课题',
                             members: fixedMembers,
-                            status: standardizedStatus, // 使用标准化后的状态
+                            status: standardizedStatus,
                             student: yamlHeader.student || '',
                             startDate: yamlHeader.startDate ? String(yamlHeader.startDate) : '',
                             endDate: yamlHeader.endDate ? String(yamlHeader.endDate) : '',
@@ -436,98 +443,176 @@
                     loadCollaborations();
                 });
 
-                // 计算教师列表及统计数据与“相对量热度”
                 const teachersWithStats = computed(() => {
-                    // 1. 统计每位老师的基础合作数量
                     const rawList = teachersList.value.map(name => {
                         const teacherCollabs = collaborations.value.filter(c => c.members && c.members.includes(name));
                         const completedCount = teacherCollabs.filter(c => c.status === '已结题').length;
                         const ongoingCount = teacherCollabs.filter(c => c.status === '在研中').length;
-                        
-                        return {
-                            name,
-                            shortName: getShortName(name),
-                            completedCount,
-                            ongoingCount,
-                            totalCount: teacherCollabs.length
-                        };
+                        return { name, shortName: getShortName(name), completedCount, ongoingCount, totalCount: teacherCollabs.length };
                     });
 
-                    // 2. 扫描全院找出参与课题总数的最高值 (作为相对量的基准 Max)
                     let maxTotal = 0;
-                    rawList.forEach(t => {
-                        if (t.totalCount > maxTotal) {
-                            maxTotal = t.totalCount;
-                        }
-                    });
+                    rawList.forEach(t => { if (t.totalCount > maxTotal) maxTotal = t.totalCount; });
 
-                    // 3. 根据相对量（相比最高峰值的比例）动态赋予合作热度标签与样式
                     return rawList.map(t => {
-                        let heatLabel = "📌 常规";
-                        let heatClass = "bg-slate-100 text-slate-600";
-                        let heatIcon = "fa-book-bookmark text-slate-400";
-
+                        let heatLabel = "📌 常规"; let heatClass = "bg-slate-100 text-slate-600"; let heatIcon = "fa-book-bookmark text-slate-400";
                         if (maxTotal > 0 && t.totalCount > 0) {
                             const ratio = t.totalCount / maxTotal;
-                            if (ratio >= 0.6) {
-                                heatLabel = "🔥 核心高热";
-                                heatClass = "bg-rose-50 text-rose-700 border border-rose-200";
-                                heatIcon = "fa-fire text-rose-500";
-                            } else if (ratio >= 0.2) {
-                                heatLabel = "⚡ 活跃合作";
-                                heatClass = "bg-amber-50 text-amber-700 border border-amber-200";
-                                heatIcon = "fa-bolt text-amber-500";
-                            }
+                            if (ratio >= 0.6) { heatLabel = "🔥 核心高热"; heatClass = "bg-rose-50 text-rose-700 border border-rose-200"; heatIcon = "fa-fire text-rose-500"; }
+                            else if (ratio >= 0.2) { heatLabel = "⚡ 活跃合作"; heatClass = "bg-amber-50 text-amber-700 border border-amber-200"; heatIcon = "fa-bolt text-amber-500"; }
                         }
-
-                        return {
-                            ...t,
-                            heatLabel,
-                            heatClass,
-                            heatIcon
-                        };
+                        return { ...t, heatLabel, heatClass, heatIcon };
                     });
                 });
 
-                // 教师过滤
                 const filteredTeachers = computed(() => {
                     if (!searchQuery.value) return teachersWithStats.value;
                     const q = searchQuery.value.toLowerCase();
                     return teachersWithStats.value.filter(t => t.name.toLowerCase().includes(q));
                 });
 
-                // 合作课题过滤
                 const filteredCollaborations = computed(() => {
                     return collaborations.value.filter(c => {
                         const matchesStatus = !statusFilter.value || c.status === statusFilter.value;
                         const q = collabSearchQuery.value.toLowerCase();
-                        const matchesQuery = !q || 
-                            c.title.toLowerCase().includes(q) || 
-                            (c.student && c.student.toLowerCase().includes(q)) || 
-                            (c.members && c.members.some(m => m.toLowerCase().includes(q)));
+                        const matchesQuery = !q || c.title.toLowerCase().includes(q) || (c.student && c.student.toLowerCase().includes(q)) || (c.members && c.members.some(m => m.toLowerCase().includes(q)));
                         return matchesStatus && matchesQuery;
                     });
                 });
 
-                const totalCompletedCollaborations = computed(() => {
-                    return collaborations.value.filter(c => c.status === '已结题').length;
-                });
+                const totalCompletedCollaborations = computed(() => collaborations.value.filter(c => c.status === '已结题').length);
+                const totalOngoingCollaborations = computed(() => collaborations.value.filter(c => c.status === '在研中').length);
+                const getTeacherCollaborations = (teacherName) => collaborations.value.filter(c => c.members && c.members.includes(teacherName));
 
-                const totalOngoingCollaborations = computed(() => {
-                    return collaborations.value.filter(c => c.status === '在研中').length;
-                });
+                const openTeacherDetail = (teacher) => { selectedTeacher.value = teacher; };
+                const openCollabDetail = (collab) => { selectedCollab.value = collab; };
 
-                const getTeacherCollaborations = (teacherName) => {
-                    return collaborations.value.filter(c => c.members && c.members.includes(teacherName));
+                // ================== 关系图谱逻辑 ==================
+                const initNetworkChart = () => {
+                    const chartDom = document.getElementById('network-chart');
+                    if (!chartDom) return;
+
+                    // 1. 准备节点数据
+                    const nodes = teachersList.value.map(name => ({
+                        id: name,
+                        name: name,
+                        symbolSize: Math.max(30, teachersWithStats.value.find(t => t.name === name).totalCount * 5 + 20), // 根据合作数量决定大小
+                        category: 0,
+                        label: { show: true, fontSize: 12, fontWeight: 'bold', color: '#1e293b' },
+                        itemStyle: { color: '#6366f1', borderColor: '#c7d2fe', borderWidth: 2 }
+                    }));
+
+                    // 2. 准备边数据（统计共同合作次数）
+                    const linkMap = new Map(); // key: "A-B", value: count
+                    collaborations.value.forEach(collab => {
+                        const members = collab.members || [];
+                        if (members.length < 2) return;
+                        // 生成两两组合
+                        for (let i = 0; i < members.length; i++) {
+                            for (let j = i + 1; j < members.length; j++) {
+                                // 排序保证 A-B 和 B-A 是同一个 key
+                                const pair = [members[i], members[j]].sort().join('-');
+                                linkMap.set(pair, (linkMap.get(pair) || 0) + 1);
+                            }
+                        }
+                    });
+
+                    const links = Array.from(linkMap.entries()).map(([pair, count]) => {
+                        const [source, target] = pair.split('-');
+                        return {
+                            source: source,
+                            target: target,
+                            value: count,
+                            label: {
+                                show: true,
+                                formatter: '{c}', // 显示连线上权重数字
+                                fontSize: 10,
+                                color: '#94a3b8'
+                            },
+                            lineStyle: {
+                                width: Math.min(6, count + 1), // 连线粗细根据合作次数变化
+                                color: '#cbd5e1',
+                                curveness: 0.1
+                            }
+                        };
+                    });
+
+                    // 3. 初始化或更新 ECharts
+                    if (!networkChartInstance) {
+                        networkChartInstance = echarts.init(chartDom);
+                    }
+
+                    const option = {
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: function (params) {
+                                if (params.dataType === 'edge') {
+                                    return `合作课题数: ${params.data.value}`;
+                                }
+                                return `教师: ${params.name}`;
+                            }
+                        },
+                        series: [{
+                            type: 'graph',
+                            layout: 'force',
+                            data: nodes,
+                            links: links,
+                            roam: true, // 允许缩放和平移
+                            draggable: true, // 允许拖拽节点
+                            label: { position: 'inside', formatter: '{b}' },
+                            edgeSymbol: ['circle', 'arrow'],
+                            edgeSymbolSize: [2, 6],
+                            force: {
+                                repulsion: 800, // 斥力，防止节点重叠太厉害
+                                edgeLength: [100, 250], // 边长范围
+                                gravity: 0.1
+                            },
+                            lineStyle: { color: 'source', curveness: 0.1 },
+                            emphasis: {
+                                focus: 'adjacency', // 高亮相邻节点
+                                lineStyle: { width: 5 }
+                            }
+                        }]
+                    };
+                    networkChartInstance.setOption(option);
+
+                    // 4. 绑定点击事件：点击节点聚焦
+                    networkChartInstance.off('click'); // 防止重复绑定
+                    networkChartInstance.on('click', function (params) {
+                        if (params.dataType === 'node') {
+                            const clickedNode = params.name;
+                            // 过滤出只跟点击节点有关的边和节点
+                            const filteredLinks = links.filter(l => l.source === clickedNode || l.target === clickedNode);
+                            const connectedNodes = new Set([clickedNode]);
+                            filteredLinks.forEach(l => { connectedNodes.add(l.source); connectedNodes.add(l.target); });
+
+                            const newNodes = nodes.filter(n => connectedNodes.has(n.id)).map(n => ({
+                                ...n,
+                                itemStyle: { color: n.id === clickedNode ? '#ef4444' : '#6366f1' } // 中心节点变红
+                            }));
+
+                            networkChartInstance.setOption({
+                                series: [{
+                                    data: newNodes,
+                                    links: filteredLinks
+                                }]
+                            });
+                        }
+                    });
                 };
 
-                const openTeacherDetail = (teacher) => {
-                    selectedTeacher.value = teacher;
+                // 重置图谱
+                const resetNetwork = () => {
+                    if (networkChartInstance) {
+                        networkChartInstance.dispose();
+                        networkChartInstance = null;
+                        nextTick(() => initNetworkChart());
+                    }
                 };
 
-                const openCollabDetail = (collab) => {
-                    selectedCollab.value = collab;
-                };
+                // 监听 Tab 切换，当切到网络图时初始化
+                // 在 Vue 中，普通的 ref 改变不会自动触发 nextTick 之外的重绘，我们用 watch 或者直接在按钮上处理
+                // 这里简单处理，通过点击 Tab 按钮时去触发初始化
 
                 return {
                     currentTab,
@@ -543,7 +628,9 @@
                     selectedCollab,
                     getTeacherCollaborations,
                     openTeacherDetail,
-                    openCollabDetail
+                    openCollabDetail,
+                    initNetworkChart,
+                    resetNetwork
                 };
             }
         }).mount('#app');
