@@ -1,5 +1,5 @@
 ---
-title: pixin
+title: 仿生皮芯纤维凝胶
 members:
   - 王淑雪
   - 宗鲁
