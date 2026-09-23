@@ -4,7 +4,7 @@ members:
   - 张建明
   - 王淑雪
 status: 已结题
-student: 张立颍
+student: 张立颍（已毕业）
 startDate: "2024"
 endDate: "2026"
 contribution: 平均分工
