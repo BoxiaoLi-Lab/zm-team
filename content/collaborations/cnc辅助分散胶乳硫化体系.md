@@ -1,0 +1,11 @@
+---
+title: CNC辅助分散胶乳硫化体系
+members:
+  - 段咏欣
+  - 刘云霄
+  - 王杰
+status: 在研中
+student: 高一帆
+startDate: "2025"
+contribution: 平均分工
+---
