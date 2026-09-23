@@ -5,7 +5,7 @@ members:
   - 宗鲁
   - 李柏霄
 status: 在研中
-student: 张宁
+student: 张宁（已毕业）
 startDate: "2025"
 endDate: 至今
 contribution: 平均分工
