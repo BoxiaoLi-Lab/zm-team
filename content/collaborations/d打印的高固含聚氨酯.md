@@ -4,7 +4,7 @@ members:
   - 周立娟
   - 宗鲁
 status: 在研中
-student: 李浩然
+student: 李浩然（已毕业）
 startDate: "2024"
 contribution: 平均分工
 result: 投稿中
